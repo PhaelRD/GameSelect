@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Jogos</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-database.js"></script>
+    <script src="js/index.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Lista de Jogos</h1>
+        <nav>
+            <ul>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="register.html">Register</a></li>
+                <li id="favoritos-menu-item"><a href="favoritos.html">Favoritos</a></li>
+                <li id="admin-menu-item"><a href="admin.html">Admin</a></li>
+                <li id="logout-menu-item"><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div id="filtros">
+            <input type="text" id="pesquisa-nome" placeholder="Pesquisar por nome">
+            <fieldset>
+                <legend>Plataformas:</legend>
+                <label><input type="checkbox" class="filtro-plataforma" value="PC"> PC</label>
+                <label><input type="checkbox" class="filtro-plataforma" value="PlayStation 4"> PlayStation 4</label>
+                <label><input type="checkbox" class="filtro-plataforma" value="PlayStation 5"> PlayStation 5</label>
+                <label><input type="checkbox" class="filtro-plataforma" value="Xbox One"> Xbox One</label>
+                <label><input type="checkbox" class="filtro-plataforma" value="Xbox Series X"> Xbox Series X</label>
+                <label><input type="checkbox" class="filtro-plataforma" value="Nintendo Switch"> Nintendo Switch</label>
+                <label><input type="checkbox" class="filtro-plataforma" value="Mobile"> Mobile</label>
+            </fieldset>
+            <fieldset>
+                <legend>Gêneros:</legend>
+                <label><input type="checkbox" class="filtro-genero" value="Ação"> Ação</label>
+                <label><input type="checkbox" class="filtro-genero" value="Aventura"> Aventura</label>
+                <label><input type="checkbox" class="filtro-genero" value="RPG"> RPG</label>
+                <label><input type="checkbox" class="filtro-genero" value="Estratégia"> Estratégia</label>
+                <label><input type="checkbox" class="filtro-genero" value="Esportes"> Esportes</label>
+                <label><input type="checkbox" class="filtro-genero" value="Simulação"> Simulação</label>
+                <label><input type="checkbox" class="filtro-genero" value="Quebra-Cabeça"> Quebra-Cabeça</label>
+                <label><input type="checkbox" class="filtro-genero" value="Corrida"> Corrida</label>
+            </fieldset>
+        </div>
+        <section id="jogos-lista">
+            <!-- Jogos serão carregados aqui -->
+        </section>
+    </main>
+</body>
+</html>

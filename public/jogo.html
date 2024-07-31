@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Jogo</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-database.js"></script>
+    <script src="js/jogo.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Detalhes do Jogo</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li id="favoritos-menu-item"><a href="favoritos.html">Favoritos</a></li>
+                <li id="logout-menu-item"><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div id="jogo-detalhes">
+            <!-- Detalhes do jogo serão carregados aqui -->
+        </div>
+        <button id="favoritar-botao">Adicionar aos Favoritos</button> <!-- Botão para gerenciar favoritos -->
+    </main>
+</body>
+</html>
