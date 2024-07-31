@@ -17,6 +17,9 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 const auth = firebase.auth();
 
+// Global variable to store user ID
+let currentUserId = null;
+
 // Function to load favorite games
 function loadFavoriteGames(favoritos) {
     const listaDiv = document.getElementById('favoritos-lista');
@@ -57,7 +60,7 @@ function loadFavoriteGames(favoritos) {
                 removeButton.textContent = 'Remover dos Favoritos';
                 removeButton.onclick = (event) => {
                     event.stopPropagation(); // Prevent click event from bubbling up to the link
-                    removeFromFavorites(user.uid, gameId);
+                    removeFromFavorites(currentUserId, gameId);
                 };
                 gameDiv.appendChild(removeButton);
 
@@ -88,6 +91,7 @@ function removeFromFavorites(userId, gameId) {
 function loadUserFavorites() {
     auth.onAuthStateChanged(user => {
         if (user) {
+            currentUserId = user.uid; // Store user ID in global variable
             const userRef = database.ref(`usuarios/${user.uid}/favoritos`);
             userRef.once('value').then(snapshot => {
                 const favoritos = snapshot.val() || [];

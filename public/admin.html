@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Adicionar Jogos</title>
+    <title>Admin - Gerenciar Jogos</title>
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-auth.js"></script>
@@ -12,7 +12,7 @@
 </head>
 <body>
     <header>
-        <h1>Adicionar Novo Jogo</h1>
+        <h1>Gerenciar Jogos</h1>
         <nav>
             <ul>
                 <li><a href="index.html">Home</a></li>
@@ -21,6 +21,8 @@
     </header>
     <main>
         <form id="adicionar-jogo">
+            <!-- Formulário para adicionar e editar jogos -->
+            <input type="hidden" id="game-id">
             <input type="text" id="nome" placeholder="Nome do Jogo" required>
             <input type="url" id="imagem" placeholder="URL da Imagem" required>
             <input type="text" id="descricao" placeholder="Descrição" required>
@@ -58,8 +60,24 @@
             </fieldset>
 
             <input type="url" id="video" placeholder="Link do Vídeo (opcional)">
-            <button type="submit">Adicionar Jogo</button>
+            <button type="submit">Salvar Jogo</button>
         </form>
+
+        <!-- Tabela para exibir jogos -->
+        <h2>Jogos Registrados</h2>
+        <table id="games-table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Plataforma</th>
+                    <th>Gênero</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Os jogos serão inseridos aqui pelo JavaScript -->
+            </tbody>
+        </table>
     </main>
 </body>
 </html>

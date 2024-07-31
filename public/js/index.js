@@ -129,7 +129,7 @@ function filterGames() {
 function logout() {
     firebase.auth().signOut().then(() => {
         // Redirect to login page or show a message
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
     }).catch((error) => {
         console.error('Error signing out: ', error);
     });

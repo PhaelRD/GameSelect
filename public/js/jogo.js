@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Render game details including links, genres, and platforms
 function renderGameDetails(jogo) {
     const detalhesDiv = document.getElementById('jogo-detalhes');
+    detalhesDiv.innerHTML = ''; // Clear previous content
 
     // Create and append the game title
     const gameTitle = document.createElement('h2');
@@ -113,13 +114,14 @@ function renderGameDetails(jogo) {
     }
 
     // Create and append the links
-    if (jogo.links && jogo.links.length > 0) {
+    if (jogo.links && Object.keys(jogo.links).length > 0) {
         const linksList = document.createElement('ul');
         const linksTitle = document.createElement('h3');
         linksTitle.textContent = 'Links:';
         detalhesDiv.appendChild(linksTitle);
 
-        jogo.links.forEach(link => {
+        Object.keys(jogo.links).forEach(key => {
+            const link = jogo.links[key];
             const listItem = document.createElement('li');
 
             const linkElement = document.createElement('a');
@@ -195,7 +197,7 @@ function removeFromFavorites(userId, gameId) {
 function logout() {
     firebase.auth().signOut().then(() => {
         // Redirect to login page or show a message
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
     }).catch((error) => {
         console.error('Error signing out: ', error);
     });
