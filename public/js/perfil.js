@@ -48,7 +48,7 @@ function renderCategoryList(categorias, category, containerId) {
     container.innerHTML = '';
 
     for (const gameId in categorias) {
-        if (categorias[gameId] === category) {
+        if (categorias[gameId].status === category) { // Changed condition to check status
             createGameElement(gameId, container);
         }
     }
@@ -67,7 +67,7 @@ function renderCompletedList(categorias, category, containerId) {
 }
 
 // Create an HTML element for a game
-function createGameElement(gameId, container, rating = null) {
+function createGameElement(gameId, container, userRating = null) {
     const gameRef = database.ref(`jogos/${gameId}`);
 
     gameRef.once('value').then(snapshot => {
@@ -95,17 +95,53 @@ function createGameElement(gameId, container, rating = null) {
             // Append the link to the gameDiv
             gameDiv.appendChild(gameLink);
 
-            // Add rating if available
-            if (rating !== null) {
-                const gameRating = document.createElement('p');
-                gameRating.textContent = `Nota: ${rating}`;
-                gameDiv.appendChild(gameRating);
+            // Add user's rating if available
+            if (userRating !== null) {
+                const userRatingElement = document.createElement('p');
+                userRatingElement.textContent = `Sua Nota: ${userRating}/10`;
+                gameDiv.appendChild(userRatingElement);
             }
+
+            // Fetch and display the average rating
+            fetchAverageRating(gameId).then(averageRating => {
+                const averageRatingElement = document.createElement('p');
+                averageRatingElement.textContent = `Nota Média: ${averageRating}`;
+                gameDiv.appendChild(averageRatingElement);
+            });
 
             container.appendChild(gameDiv);
         }
     }).catch(error => {
         console.error('Error loading game details:', error);
+    });
+}
+
+// Fetch average rating for a specific game
+function fetchAverageRating(gameId) {
+    return new Promise((resolve, reject) => {
+        database.ref('usuarios').once('value').then(snapshot => {
+            const users = snapshot.val() || {};
+            let sum = 0;
+            let count = 0;
+
+            for (const userId in users) {
+                const categorias = users[userId].categorias || {};
+                if (categorias[gameId] && categorias[gameId].status === 'zerado') {
+                    sum += categorias[gameId].nota;
+                    count += 1;
+                }
+            }
+
+            if (count > 0) {
+                const average = (sum / count).toFixed(1);
+                resolve(`${average}/10`);
+            } else {
+                resolve('N/A');
+            }
+        }).catch(error => {
+            console.error('Error fetching average rating:', error);
+            resolve('N/A');
+        });
     });
 }
 

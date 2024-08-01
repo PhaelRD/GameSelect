@@ -54,7 +54,45 @@ document.addEventListener('DOMContentLoaded', function() {
 function fetchGames() {
     database.ref('jogos').on('value', snapshot => {
         const jogos = snapshot.val();
+        calculateAndRenderGamesWithRatings(jogos);
+    });
+}
+
+// Calculate average ratings and render games
+function calculateAndRenderGamesWithRatings(jogos) {
+    const ratingsRef = database.ref('usuarios');
+    ratingsRef.once('value').then(snapshot => {
+        const users = snapshot.val() || {};
+        const gameRatings = {};
+
+        // Calculate average ratings for each game
+        for (let userId in users) {
+            const categorias = users[userId].categorias || {};
+            for (let gameId in categorias) {
+                if (categorias[gameId].status === 'zerado') {
+                    if (!gameRatings[gameId]) {
+                        gameRatings[gameId] = { sum: 0, count: 0 };
+                    }
+                    gameRatings[gameId].sum += categorias[gameId].nota;
+                    gameRatings[gameId].count += 1;
+                }
+            }
+        }
+
+        // Calculate average ratings and update games
+        for (let gameId in gameRatings) {
+            const { sum, count } = gameRatings[gameId];
+            if (count > 0) {
+                const averageRating = (sum / count).toFixed(1);
+                jogos[gameId].averageRating = `${averageRating}/10`;
+            } else {
+                jogos[gameId].averageRating = 'N/A';
+            }
+        }
+
         renderGames(jogos);
+    }).catch(error => {
+        console.error('Error calculating game ratings:', error);
     });
 }
 
@@ -82,9 +120,14 @@ function renderGames(jogos) {
         gameImage.src = jogo.imagem;
         gameImage.alt = jogo.nome;
 
+        // Create and append the average rating
+        const gameRating = document.createElement('p');
+        gameRating.textContent = `Nota Média: ${jogo.averageRating || 'N/A'}`;
+
         // Append elements to game link in the desired order
         gameLink.appendChild(gameName); // Name first
         gameLink.appendChild(gameImage); // Image second
+        gameLink.appendChild(gameRating); // Rating last
 
         // Append game link to game element
         gameElement.appendChild(gameLink);
@@ -121,7 +164,7 @@ function filterGames() {
             }
         }
 
-        renderGames(filteredGames);
+        calculateAndRenderGamesWithRatings(filteredGames); // Calculate ratings and render filtered games
     });
 }
 

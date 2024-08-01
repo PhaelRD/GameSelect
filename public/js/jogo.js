@@ -28,7 +28,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const jogo = snapshot.val();
             if (jogo) {
                 renderGameDetails(jogo);
-                setupCategoryButtons(gameId); // Set up the category buttons
+                setupCategoryButtons(gameId);
+                calculateAndDisplayAverageRating(gameId); // Calculate and display average rating
             } else {
                 document.getElementById('jogo-detalhes').innerHTML = '<p>Jogo não encontrado.</p>';
             }
@@ -144,104 +145,98 @@ function setupCategoryButtons(gameId) {
     const desejadosButton = document.getElementById('desejados-botao');
     const jogandoButton = document.getElementById('jogando-botao');
     const zeradoButton = document.getElementById('zerado-botao');
-    const notaDiv = document.getElementById('nota-zerado');
+    const notaZeradoDiv = document.getElementById('nota-zerado');
     const enviarNotaButton = document.getElementById('enviar-nota');
     const notaInput = document.getElementById('nota');
-    
+
     auth.onAuthStateChanged(user => {
         if (user) {
-            const userRef = database.ref(`usuarios/${user.uid}`);
-            userRef.once('value').then(snapshot => {
-                const userData = snapshot.val();
-                const categorias = userData.categorias || {};
-                
-                desejadosButton.textContent = categorias[gameId] === 'desejado' ? 'Remover dos Desejados' : 'Adicionar aos Desejados';
-                jogandoButton.textContent = categorias[gameId] === 'jogando' ? 'Remover dos Jogando' : 'Adicionar aos Jogando';
-                zeradoButton.textContent = categorias[gameId] === 'zerado' ? 'Remover dos Zerados' : 'Marcar como Zerado';
-                
-                // Set up button click handlers
-                desejadosButton.addEventListener('click', () => toggleCategory(user.uid, gameId, 'desejado'));
-                jogandoButton.addEventListener('click', () => toggleCategory(user.uid, gameId, 'jogando'));
-                zeradoButton.addEventListener('click', () => {
-                    if (categorias[gameId] === 'zerado') {
-                        removeCategory(user.uid, gameId, 'zerado');
-                    } else {
-                        notaDiv.style.display = 'block'; // Show the rating input
-                        enviarNotaButton.addEventListener('click', () => {
-                            const nota = parseInt(notaInput.value);
-                            if (nota >= 1 && nota <= 10) {
-                                markAsCompleted(user.uid, gameId, nota);
-                                notaDiv.style.display = 'none'; // Hide the rating input
-                            } else {
-                                alert('Por favor, forneça uma nota válida entre 1 e 10.');
-                            }
-                        });
-                    }
-                });
+            const userId = user.uid;
+            // Add event listeners for category buttons
+            desejadosButton.addEventListener('click', () => setCategory(userId, gameId, 'desejado'));
+            jogandoButton.addEventListener('click', () => setCategory(userId, gameId, 'jogando'));
+            zeradoButton.addEventListener('click', () => {
+                notaZeradoDiv.style.display = 'block'; // Show rating input when "Zerado" is selected
+            });
+
+            enviarNotaButton.addEventListener('click', () => {
+                const nota = parseInt(notaInput.value);
+                if (nota >= 1 && nota <= 10) {
+                    setCategory(userId, gameId, 'zerado', nota);
+                    notaZeradoDiv.style.display = 'none'; // Hide rating input after submitting
+                } else {
+                    alert('Por favor, insira uma nota válida entre 1 e 10.');
+                }
             });
         } else {
-            // Hide buttons if user is not logged in
-            desejadosButton.style.display = 'none';
-            jogandoButton.style.display = 'none';
-            zeradoButton.style.display = 'none';
+            alert('Você precisa estar logado para realizar esta ação.');
         }
     });
 }
 
-// Toggle category for a game
-function toggleCategory(userId, gameId, category) {
-    const userRef = database.ref(`usuarios/${userId}/categorias`);
-    userRef.once('value').then(snapshot => {
-        const categorias = snapshot.val() || {};
-        const currentCategory = categorias[gameId];
-        
-        if (currentCategory === category) {
-            removeCategory(userId, gameId, category);
-        } else {
-            if (currentCategory) {
-                removeCategory(userId, gameId, currentCategory);
+// Set the category for the game in the user's profile
+function setCategory(userId, gameId, category, nota = null) {
+    const userGameRef = database.ref(`usuarios/${userId}/categorias/${gameId}`);
+    
+    if (category === 'zerado' && nota !== null) {
+        userGameRef.set({
+            status: category,
+            nota: nota
+        }).then(() => {
+            alert('Jogo marcado como zerado e nota enviada!');
+            updateGameRatings(gameId); // Update ratings after setting the game as completed
+        }).catch(error => {
+            console.error('Erro ao atualizar categoria do jogo:', error);
+        });
+    } else {
+        userGameRef.set({
+            status: category
+        }).then(() => {
+            alert(`Jogo adicionado aos ${category}!`);
+        }).catch(error => {
+            console.error('Erro ao atualizar categoria do jogo:', error);
+        });
+    }
+}
+
+// Calculate and display the average rating for the game
+function calculateAndDisplayAverageRating(gameId) {
+    const ratingsRef = database.ref(`usuarios`);
+    let totalRatings = 0;
+    let sumRatings = 0;
+
+    ratingsRef.once('value').then(snapshot => {
+        snapshot.forEach(userSnapshot => {
+            const userCategories = userSnapshot.val().categorias || {};
+
+            if (userCategories[gameId] && userCategories[gameId].status === 'zerado') {
+                const userRating = userCategories[gameId].nota;
+                sumRatings += userRating;
+                totalRatings++;
             }
-            addCategory(userId, gameId, category);
-        }
+        });
+
+        const averageRating = totalRatings > 0 ? (sumRatings / totalRatings).toFixed(1) : 'N/A'; // Changed to 1 decimal place
+        displayAverageRating(averageRating);
+    }).catch(error => {
+        console.error('Error calculating average rating:', error);
     });
 }
 
-// Add a category to the game
-function addCategory(userId, gameId, category) {
-    const userRef = database.ref(`usuarios/${userId}/categorias`);
-    userRef.child(gameId).set(category).then(() => {
-        document.getElementById(`${category}-botao`).textContent = `Remover dos ${capitalizeFirstLetter(category)}s`;
-    });
+// Display the average rating on the page
+function displayAverageRating(averageRating) {
+    const notaMediaDiv = document.getElementById('nota-media');
+    notaMediaDiv.innerHTML = `<h3>Média de notas: ${averageRating}/10</h3>`; // Format as X/10
 }
 
-// Remove a category from the game
-function removeCategory(userId, gameId, category) {
-    const userRef = database.ref(`usuarios/${userId}/categorias`);
-    userRef.child(gameId).remove().then(() => {
-        document.getElementById(`${category}-botao`).textContent = `Adicionar aos ${capitalizeFirstLetter(category)}s`;
-    });
-}
-
-// Mark the game as completed with a rating
-function markAsCompleted(userId, gameId, rating) {
-    const userRef = database.ref(`usuarios/${userId}/categorias`);
-    userRef.child(gameId).set({
-        status: 'zerado',
-        nota: rating
-    }).then(() => {
-        document.getElementById('zerado-botao').textContent = 'Remover dos Zerados';
-    });
-}
-
-// Capitalize the first letter of a string
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+// Update the game ratings after a user sets a new rating
+function updateGameRatings(gameId) {
+    calculateAndDisplayAverageRating(gameId);
 }
 
 // Logout function
 function logout() {
     firebase.auth().signOut().then(() => {
-        // Redirect to login page or show a message
         window.location.href = 'index.html';
     }).catch((error) => {
         console.error('Error signing out: ', error);
