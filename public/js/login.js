@@ -1,4 +1,4 @@
-// Your web app's Firebase configuration
+// Configuração do Firebase
 var firebaseConfig = {
     apiKey: "AIzaSyC0rjXmQpkSk7BSUtWwDnnIaFsyDPtIz8o",
     authDomain: "emulando-6fa4e.firebaseapp.com",
@@ -8,34 +8,86 @@ var firebaseConfig = {
     messagingSenderId: "285091625419",
     appId: "1:285091625419:web:43d5d37d36cb100b3d1e4e",
     measurementId: "G-7LS6SXRR34"
-  };
-// Initialize Firebase
+};
+
+// Inicialize o Firebase
 firebase.initializeApp(firebaseConfig);
 
-// Reference to the Firebase Auth service
+// Referência ao serviço de autenticação do Firebase
 const auth = firebase.auth();
 
-document.getElementById('login-form').addEventListener('submit', function(event) {
+// Obtenha referência ao formulário de login
+const loginForm = document.getElementById('login-form');
+
+// Obtenha referência ao spinner
+const spinner = document.getElementById('spinner');
+
+// Obtenha referência aos alertas
+const alertSuccess = document.getElementById('alert-success');
+const alertError = document.getElementById('alert-error');
+const errorMessage = document.getElementById('error-message');
+
+// Função para mostrar alerta
+function showAlert(alertElement) {
+    alertElement.classList.remove('d-none');
+    setTimeout(() => {
+        alertElement.classList.add('d-none');
+    }, 3000); // Alerta some após 3 segundos
+}
+
+// Adicione o ouvinte de evento de envio ao formulário
+loginForm.addEventListener('submit', function(event) {
     event.preventDefault();
 
-    // Get email and password from form
+    // Mostre o spinner
+    spinner.style.display = 'block';
+
+    // Ocultar alertas anteriores
+    alertSuccess.classList.add('d-none');
+    alertError.classList.add('d-none');
+
+    // Obtenha o email e a senha do formulário
     const email = document.getElementById('email').value;
     const password = document.getElementById('senha').value;
 
-    // Sign in with email and password
+    // Faça login com email e senha
     auth.signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
-            // User signed in successfully
+            // Ocultar o spinner
+            spinner.style.display = 'none';
+
+            // Usuário logado com sucesso
             const user = userCredential.user;
-            console.log('User signed in:', user);
-            
-            // Redirect to a different page or show a success message
-            alert('Login realizado com sucesso!');
-            window.location.href = 'index.html'; // Redirect to the main page or dashboard
+            console.log('Usuário logado:', user);
+
+            // Mostrar alerta de sucesso
+            showAlert(alertSuccess);
+
+            // Redirecionar após um pequeno atraso
+            setTimeout(() => {
+                window.location.href = 'index.html'; // Redireciona para a página principal ou dashboard
+            }, 1500);
         })
         .catch((error) => {
-            // Handle errors
-            console.error('Error signing in:', error.message);
-            alert('Erro ao entrar: ' + error.message);
+            // Ocultar o spinner
+            spinner.style.display = 'none';
+
+            // Lide com erros
+            console.error('Erro ao entrar:', error.message);
+
+            // Identifique erros específicos
+            switch (error.code) {
+                case 'auth/wrong-password':
+                    errorMessage.textContent = 'Senha incorreta.';
+                    break;
+                case 'auth/user-not-found':
+                    errorMessage.textContent = 'Email não registrado.';
+                    break;
+                default:
+                    errorMessage.textContent = error.message;
+            }
+            
+            // Mostrar alerta de erro
+            showAlert(alertError);
         });
 });

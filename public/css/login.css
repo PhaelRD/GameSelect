@@ -1,0 +1,34 @@
+body {
+    background-color: #f8f9fa; /* Fundo cinza claro */
+}
+
+header {
+    background-color: #343a40; /* Cabeçalho cinza escuro */
+}
+
+h1 {
+    color: #ffc107; /* Texto amarelo */
+}
+
+.card {
+    border: 1px solid #ffc107; /* Borda amarela */
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529; /* Cor do texto escura para contraste */
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+}
+
+.form-control {
+    border-color: #ced4da; /* Bordas cinzas claras para inputs */
+}
+
+.alert {
+    margin-bottom: 15px; /* Espaçamento abaixo do alerta */
+}

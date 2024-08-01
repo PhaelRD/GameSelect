@@ -4,22 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- Incluir CSS do Bootstrap -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Incluir CSS Personalizado -->
+    <link rel="stylesheet" href="css/login.css">
+    <!-- Incluir Scripts do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-database.js"></script>
+    <!-- Incluir JS do Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Incluir JS Personalizado -->
     <script src="js/login.js" defer></script>
 </head>
-<body>
-    <header>
+<body class="bg-light">
+    <header class="bg-dark text-white text-center py-3">
         <h1>Login</h1>
     </header>
-    <main>
-        <form id="login-form">
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="senha" placeholder="Senha" required>
-            <button type="submit">Entrar</button>
-        </form>
+    <main class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Alerta de Sucesso -->
+                        <div id="alert-success" class="alert alert-success d-none" role="alert">
+                            Login realizado com sucesso!
+                        </div>
+                        <!-- Alerta de Erro Genérico -->
+                        <div id="alert-error" class="alert alert-danger d-none" role="alert">
+                            Erro ao entrar: <span id="error-message"></span>
+                        </div>
+                        <!-- Formulário de Login -->
+                        <form id="login-form">
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" class="form-control" placeholder="Email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="senha">Senha</label>
+                                <input type="password" id="senha" class="form-control" placeholder="Senha" required>
+                            </div>
+                            <button type="submit" class="btn btn-warning btn-block">Entrar</button>
+
+                            <!-- Spinner de Carregamento -->
+                            <div id="spinner" class="spinner-border text-warning mt-3" role="status" style="display: none;">
+                                <span class="sr-only">Carregando...</span>
+                            </div>
+                        </form>
+                        <!-- Botão para Registro -->
+                        <div class="text-center mt-3">
+                            <p>Não tem uma conta? <a href="register.html" class="btn btn-link">Registre-se</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 </body>
 </html>

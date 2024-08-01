@@ -82,11 +82,10 @@ function calculateAndRenderGamesWithRatings(jogos) {
         // Calculate average ratings and update games
         for (let gameId in gameRatings) {
             const { sum, count } = gameRatings[gameId];
-            if (count > 0) {
-                const averageRating = (sum / count).toFixed(1);
+            const averageRating = count > 0 ? (sum / count).toFixed(1) : 'N/A';
+
+            if (jogos[gameId]) { // Check if the game exists in the jogos data
                 jogos[gameId].averageRating = `${averageRating}/10`;
-            } else {
-                jogos[gameId].averageRating = 'N/A';
             }
         }
 
@@ -103,6 +102,11 @@ function renderGames(jogos) {
 
     for (let id in jogos) {
         const jogo = jogos[id];
+
+        // Check if the game object is defined
+        if (!jogo) {
+            continue;
+        }
 
         // Create HTML elements for game
         const gameElement = document.createElement('div');
