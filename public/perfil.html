@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil do Usuário</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-database.js"></script>
+    <script src="js/perfil.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Perfil do Usuário</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="desejados">
+            <h2>Desejados</h2>
+            <div id="desejados-lista">
+                <!-- Lista de jogos desejados será carregada aqui -->
+            </div>
+        </section>
+        <section id="jogando">
+            <h2>Jogando</h2>
+            <div id="jogando-lista">
+                <!-- Lista de jogos em andamento será carregada aqui -->
+            </div>
+        </section>
+        <section id="zerado">
+            <h2>Zerado</h2>
+            <div id="zerado-lista">
+                <!-- Lista de jogos zerados e notas será carregada aqui -->
+            </div>
+        </section>
+    </main>
+</body>
+</html>

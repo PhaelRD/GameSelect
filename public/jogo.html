@@ -16,7 +16,7 @@
         <nav>
             <ul>
                 <li><a href="index.html">Home</a></li>
-                <li id="favoritos-menu-item"><a href="favoritos.html">Favoritos</a></li>
+                <li id="perfil-menu-item"><a href="perfil.html">Perfil</a></li>
                 <li id="logout-menu-item"><a href="#" onclick="logout()">Logout</a></li>
             </ul>
         </nav>
@@ -25,7 +25,14 @@
         <div id="jogo-detalhes">
             <!-- Detalhes do jogo serão carregados aqui -->
         </div>
-        <button id="favoritar-botao">Adicionar aos Favoritos</button> <!-- Botão para gerenciar favoritos -->
+        <button id="desejados-botao">Adicionar aos Desejados</button>
+        <button id="jogando-botao">Adicionar aos Jogando</button>
+        <button id="zerado-botao">Marcar como Zerado</button>
+        <div id="nota-zerado" style="display: none;">
+            <label for="nota">Dê uma nota de 1 a 10:</label>
+            <input type="number" id="nota" min="1" max="10">
+            <button id="enviar-nota">Enviar Nota</button>
+        </div>
     </main>
 </body>
 </html>

@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const jogo = snapshot.val();
             if (jogo) {
                 renderGameDetails(jogo);
-                setupFavoriteButton(gameId); // Set up the favorite button
+                setupCategoryButtons(gameId); // Set up the category buttons
             } else {
                 document.getElementById('jogo-detalhes').innerHTML = '<p>Jogo não encontrado.</p>';
             }
@@ -139,58 +139,103 @@ function renderGameDetails(jogo) {
     }
 }
 
-// Set up the favorite button
-function setupFavoriteButton(gameId) {
-    const favoriteButton = document.getElementById('favoritar-botao');
+// Set up the category buttons
+function setupCategoryButtons(gameId) {
+    const desejadosButton = document.getElementById('desejados-botao');
+    const jogandoButton = document.getElementById('jogando-botao');
+    const zeradoButton = document.getElementById('zerado-botao');
+    const notaDiv = document.getElementById('nota-zerado');
+    const enviarNotaButton = document.getElementById('enviar-nota');
+    const notaInput = document.getElementById('nota');
     
     auth.onAuthStateChanged(user => {
         if (user) {
-            // Check if the game is already in the user's favorites
             const userRef = database.ref(`usuarios/${user.uid}`);
             userRef.once('value').then(snapshot => {
                 const userData = snapshot.val();
-                const isFavorite = userData.favoritos && userData.favoritos.includes(gameId);
-                favoriteButton.textContent = isFavorite ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos';
+                const categorias = userData.categorias || {};
                 
-                // Add event listener to toggle favorite status
-                favoriteButton.addEventListener('click', () => {
-                    if (isFavorite) {
-                        removeFromFavorites(user.uid, gameId);
+                desejadosButton.textContent = categorias[gameId] === 'desejado' ? 'Remover dos Desejados' : 'Adicionar aos Desejados';
+                jogandoButton.textContent = categorias[gameId] === 'jogando' ? 'Remover dos Jogando' : 'Adicionar aos Jogando';
+                zeradoButton.textContent = categorias[gameId] === 'zerado' ? 'Remover dos Zerados' : 'Marcar como Zerado';
+                
+                // Set up button click handlers
+                desejadosButton.addEventListener('click', () => toggleCategory(user.uid, gameId, 'desejado'));
+                jogandoButton.addEventListener('click', () => toggleCategory(user.uid, gameId, 'jogando'));
+                zeradoButton.addEventListener('click', () => {
+                    if (categorias[gameId] === 'zerado') {
+                        removeCategory(user.uid, gameId, 'zerado');
                     } else {
-                        addToFavorites(user.uid, gameId);
+                        notaDiv.style.display = 'block'; // Show the rating input
+                        enviarNotaButton.addEventListener('click', () => {
+                            const nota = parseInt(notaInput.value);
+                            if (nota >= 1 && nota <= 10) {
+                                markAsCompleted(user.uid, gameId, nota);
+                                notaDiv.style.display = 'none'; // Hide the rating input
+                            } else {
+                                alert('Por favor, forneça uma nota válida entre 1 e 10.');
+                            }
+                        });
                     }
                 });
             });
         } else {
-            favoriteButton.style.display = 'none'; // Hide button if user is not logged in
+            // Hide buttons if user is not logged in
+            desejadosButton.style.display = 'none';
+            jogandoButton.style.display = 'none';
+            zeradoButton.style.display = 'none';
         }
     });
 }
 
-// Add a game to user's favorites
-function addToFavorites(userId, gameId) {
-    const userRef = database.ref(`usuarios/${userId}/favoritos`);
+// Toggle category for a game
+function toggleCategory(userId, gameId, category) {
+    const userRef = database.ref(`usuarios/${userId}/categorias`);
     userRef.once('value').then(snapshot => {
-        const favoritos = snapshot.val() || [];
-        if (!favoritos.includes(gameId)) {
-            favoritos.push(gameId);
-            userRef.set(favoritos).then(() => {
-                document.getElementById('favoritar-botao').textContent = 'Remover dos Favoritos';
-            });
+        const categorias = snapshot.val() || {};
+        const currentCategory = categorias[gameId];
+        
+        if (currentCategory === category) {
+            removeCategory(userId, gameId, category);
+        } else {
+            if (currentCategory) {
+                removeCategory(userId, gameId, currentCategory);
+            }
+            addCategory(userId, gameId, category);
         }
     });
 }
 
-// Remove a game from user's favorites
-function removeFromFavorites(userId, gameId) {
-    const userRef = database.ref(`usuarios/${userId}/favoritos`);
-    userRef.once('value').then(snapshot => {
-        let favoritos = snapshot.val() || [];
-        favoritos = favoritos.filter(id => id !== gameId);
-        userRef.set(favoritos).then(() => {
-            document.getElementById('favoritar-botao').textContent = 'Adicionar aos Favoritos';
-        });
+// Add a category to the game
+function addCategory(userId, gameId, category) {
+    const userRef = database.ref(`usuarios/${userId}/categorias`);
+    userRef.child(gameId).set(category).then(() => {
+        document.getElementById(`${category}-botao`).textContent = `Remover dos ${capitalizeFirstLetter(category)}s`;
     });
+}
+
+// Remove a category from the game
+function removeCategory(userId, gameId, category) {
+    const userRef = database.ref(`usuarios/${userId}/categorias`);
+    userRef.child(gameId).remove().then(() => {
+        document.getElementById(`${category}-botao`).textContent = `Adicionar aos ${capitalizeFirstLetter(category)}s`;
+    });
+}
+
+// Mark the game as completed with a rating
+function markAsCompleted(userId, gameId, rating) {
+    const userRef = database.ref(`usuarios/${userId}/categorias`);
+    userRef.child(gameId).set({
+        status: 'zerado',
+        nota: rating
+    }).then(() => {
+        document.getElementById('zerado-botao').textContent = 'Remover dos Zerados';
+    });
+}
+
+// Capitalize the first letter of a string
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 // Logout function

@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (user) {
             // User is signed in
             document.getElementById('logout-menu-item').style.display = 'block';
-            document.getElementById('favoritos-menu-item').style.display = 'block'; // Show "Favoritos" when logged in
+            document.getElementById('perfil-menu-item').style.display = 'block'; // Show "Favoritos" when logged in
             database.ref(`users/${user.uid}`).once('value').then(snapshot => {
                 const isAdmin = snapshot.val().admin || false;
                 document.getElementById('admin-menu-item').style.display = isAdmin ? 'block' : 'none';
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             // User is not signed in
             document.getElementById('logout-menu-item').style.display = 'none';
-            document.getElementById('favoritos-menu-item').style.display = 'none'; // Hide "Favoritos" when not logged in
+            document.getElementById('perfil-menu-item').style.display = 'none'; // Hide "Favoritos" when not logged in
             document.getElementById('admin-menu-item').style.display = 'none';
         }
     });
