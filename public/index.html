@@ -4,56 +4,145 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Jogos</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- Incluir CSS do Bootstrap -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Incluir CSS Personalizado -->
+    <link rel="stylesheet" href="css/index.css">
+    <!-- Incluir Scripts do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-database.js"></script>
+    <!-- Incluir JS do Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Incluir JS Personalizado -->
     <script src="js/index.js" defer></script>
 </head>
-<body>
+<body class="bg-light">
     <header>
-        <h1>Lista de Jogos</h1>
-        <nav>
-            <ul>
-                <li><a href="login.html">Login</a></li>
-                <li><a href="register.html">Register</a></li>
-                <li id="perfil-menu-item"><a href="perfil.html">Perfil</a></li>
-                <li id="admin-menu-item"><a href="admin.html">Admin</a></li>
-                <li id="logout-menu-item"><a href="#" onclick="logout()">Logout</a></li>
-            </ul>
+        <!-- Barra de navegação -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="#">Lista de Jogos</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+                        <li class="nav-item"><a class="nav-link" href="register.html">Registrar</a></li>
+                        <li class="nav-item" id="perfil-menu-item" style="display: none;"><a class="nav-link" href="perfil.html">Perfil</a></li>
+                        <li class="nav-item" id="admin-menu-item" style="display: none;"><a class="nav-link" href="admin.html">Admin</a></li>
+                        <li class="nav-item" id="logout-menu-item" style="display: none;"><a class="nav-link" href="#" onclick="logout()">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
         </nav>
     </header>
-    <div id="banner">
-        <img src="path-to-your-banner-image.jpg" alt="Banner de Jogos">
+
+    <!-- Banner Clicável -->
+    <div id="banner" class="container mt-4">
+        <a href="https://www.exemplo.com" target="_blank">
+            <img src="IMG/Banner.png" alt="Banner de Jogos" class="img-fluid">
+        </a>
     </div>
-    <main>
-        <div id="filtros">
-            <input type="text" id="pesquisa-nome" placeholder="Pesquisar por nome">
-            <fieldset>
-                <legend>Plataformas:</legend>
-                <label><input type="checkbox" class="filtro-plataforma" value="PC"> PC</label>
-                <label><input type="checkbox" class="filtro-plataforma" value="PlayStation 4"> PlayStation 4</label>
-                <label><input type="checkbox" class="filtro-plataforma" value="PlayStation 5"> PlayStation 5</label>
-                <label><input type="checkbox" class="filtro-plataforma" value="Xbox One"> Xbox One</label>
-                <label><input type="checkbox" class="filtro-plataforma" value="Xbox Series X"> Xbox Series X</label>
-                <label><input type="checkbox" class="filtro-plataforma" value="Nintendo Switch"> Nintendo Switch</label>
-                <label><input type="checkbox" class="filtro-plataforma" value="Mobile"> Mobile</label>
-            </fieldset>
-            <fieldset>
-                <legend>Gêneros:</legend>
-                <label><input type="checkbox" class="filtro-genero" value="Ação"> Ação</label>
-                <label><input type="checkbox" class="filtro-genero" value="Aventura"> Aventura</label>
-                <label><input type="checkbox" class="filtro-genero" value="RPG"> RPG</label>
-                <label><input type="checkbox" class="filtro-genero" value="Estratégia"> Estratégia</label>
-                <label><input type="checkbox" class="filtro-genero" value="Esportes"> Esportes</label>
-                <label><input type="checkbox" class="filtro-genero" value="Simulação"> Simulação</label>
-                <label><input type="checkbox" class="filtro-genero" value="Quebra-Cabeça"> Quebra-Cabeça</label>
-                <label><input type="checkbox" class="filtro-genero" value="Corrida"> Corrida</label>
-            </fieldset>
+
+    <main class="container mt-5">
+        <div class="row">
+            <!-- Filtros -->
+            <div class="col-md-3">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Pesquisar</h5>
+                        <input type="text" id="pesquisa-nome" class="form-control" placeholder="Pesquisar por nome">
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Plataformas</h5>
+                        <fieldset>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-plataforma" type="checkbox" value="PC" id="plataformaPC">
+                                <label class="form-check-label" for="plataformaPC">PC</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-plataforma" type="checkbox" value="PlayStation 4" id="plataformaPS4">
+                                <label class="form-check-label" for="plataformaPS4">PlayStation 4</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-plataforma" type="checkbox" value="PlayStation 5" id="plataformaPS5">
+                                <label class="form-check-label" for="plataformaPS5">PlayStation 5</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-plataforma" type="checkbox" value="Xbox One" id="plataformaXboxOne">
+                                <label class="form-check-label" for="plataformaXboxOne">Xbox One</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-plataforma" type="checkbox" value="Xbox Series X" id="plataformaXboxSeriesX">
+                                <label class="form-check-label" for="plataformaXboxSeriesX">Xbox Series X</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-plataforma" type="checkbox" value="Nintendo Switch" id="plataformaSwitch">
+                                <label class="form-check-label" for="plataformaSwitch">Nintendo Switch</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-plataforma" type="checkbox" value="Mobile" id="plataformaMobile">
+                                <label class="form-check-label" for="plataformaMobile">Mobile</label>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Gêneros</h5>
+                        <fieldset>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-genero" type="checkbox" value="Ação" id="generoAcao">
+                                <label class="form-check-label" for="generoAcao">Ação</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-genero" type="checkbox" value="Aventura" id="generoAventura">
+                                <label class="form-check-label" for="generoAventura">Aventura</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-genero" type="checkbox" value="RPG" id="generoRPG">
+                                <label class="form-check-label" for="generoRPG">RPG</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-genero" type="checkbox" value="Estratégia" id="generoEstrategia">
+                                <label class="form-check-label" for="generoEstrategia">Estratégia</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-genero" type="checkbox" value="Esportes" id="generoEsportes">
+                                <label class="form-check-label" for="generoEsportes">Esportes</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-genero" type="checkbox" value="Simulação" id="generoSimulacao">
+                                <label class="form-check-label" for="generoSimulacao">Simulação</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-genero" type="checkbox" value="Quebra-Cabeça" id="generoQuebraCabeca">
+                                <label class="form-check-label" for="generoQuebraCabeca">Quebra-Cabeça</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filtro-genero" type="checkbox" value="Corrida" id="generoCorrida">
+                                <label class="form-check-label" for="generoCorrida">Corrida</label>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Jogos -->
+            <div class="col-md-9">
+                <div class="row" id="jogos-lista">
+                    <!-- Jogos e Propagandas serão carregados aqui -->
+                </div>
+            </div>
         </div>
-        <section id="jogos-lista">
-            <!-- Jogos serão carregados aqui -->
-        </section>
     </main>
 </body>
 </html>

@@ -1,0 +1,79 @@
+body {
+    background-color: #f8f9fa; /* Cor de fundo da página */
+}
+
+header {
+    margin-bottom: 20px;
+}
+
+h1 {
+    color: #ffc107; /* Cor amarela para o título */
+}
+
+.navbar-brand {
+    color: #ffc107 !important; /* Marca amarela na navegação */
+}
+
+.card {
+    border: 1px solid #ffc107; /* Borda amarela */
+}
+
+.card-title {
+    color: #343a40; /* Título de card em cinza escuro */
+}
+
+#jogos-lista .game {
+    margin-bottom: 20px; /* Espaçamento entre os cards de jogos */
+}
+
+#jogos-lista .game img {
+    width: 100%; /* Imagem do jogo ocupa toda a largura do card */
+    height: auto; /* Altura automática para manter proporção */
+    max-height: 200px; /* Altura máxima para imagens */
+    object-fit: cover; /* Ajustar imagem para cobrir todo o espaço disponível */
+}
+
+#jogos-lista .game-link {
+    text-decoration: none; /* Remover sublinhado dos links */
+    color: #212529; /* Cor padrão para texto dos links */
+    transition: transform 0.2s ease; /* Suave efeito de transformação */
+}
+
+#jogos-lista .game-link:hover {
+    transform: scale(1.05); /* Ampliar levemente o card ao passar o mouse */
+}
+
+#jogos-lista .game h3 {
+    margin-top: 10px;
+    font-size: 1.25rem;
+    color: #343a40; /* Cor do título do jogo */
+}
+
+#jogos-lista .game p {
+    font-size: 0.875rem;
+    color: #6c757d; /* Cor cinza para a nota média */
+}
+
+.ad-card {
+    border: 1px solid #343a40; /* Borda do anúncio */
+}
+
+.ad-card .card-title {
+    font-weight: bold;
+    color: #343a40; /* Cor do título do anúncio */
+}
+
+.ad-card .card-text {
+    color: #212529; /* Cor do texto do anúncio */
+}
+
+.ad-card .btn-dark {
+    background-color: #343a40;
+    color: #ffc107;
+    border-color: #343a40;
+}
+
+.ad-card .btn-dark:hover {
+    background-color: #212529;
+    color: #ffc107;
+}

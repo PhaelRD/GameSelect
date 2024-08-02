@@ -17,32 +17,7 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Get the game ID from the URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const gameId = urlParams.get('id');
-
-    if (gameId) {
-        // Fetch the game details from Firebase
-        database.ref(`jogos/${gameId}`).once('value').then(snapshot => {
-            const jogo = snapshot.val();
-            if (jogo) {
-                renderGameDetails(jogo);
-                setupCategoryButtons(gameId);
-                calculateAndDisplayAverageRating(gameId); // Calculate and display average rating
-            } else {
-                document.getElementById('jogo-detalhes').innerHTML = '<p>Jogo não encontrado.</p>';
-            }
-        }).catch(error => {
-            console.error('Error fetching game details:', error);
-            document.getElementById('jogo-detalhes').innerHTML = '<p>Erro ao carregar detalhes do jogo.</p>';
-        });
-    } else {
-        document.getElementById('jogo-detalhes').innerHTML = '<p>ID do jogo não fornecido.</p>';
-    }
-});
-
-// Render game details including links, genres, and platforms
+// Function to render game details including links, genres, and platforms
 function renderGameDetails(jogo) {
     const detalhesDiv = document.getElementById('jogo-detalhes');
     detalhesDiv.innerHTML = ''; // Clear previous content
@@ -168,8 +143,15 @@ function setupCategoryButtons(gameId) {
                     alert('Por favor, insira uma nota válida entre 1 e 10.');
                 }
             });
+
+            // Show profile and logout menu items
+            document.getElementById('perfil-menu-item').style.display = 'block';
+            document.getElementById('logout-menu-item').style.display = 'block';
         } else {
-            alert('Você precisa estar logado para realizar esta ação.');
+            // Hide profile and logout menu items
+            document.getElementById('perfil-menu-item').style.display = 'none';
+            document.getElementById('logout-menu-item').style.display = 'none';
+
         }
     });
 }
@@ -242,3 +224,29 @@ function logout() {
         console.error('Error signing out: ', error);
     });
 }
+
+// On page load, check user authentication and fetch game details
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the game ID from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const gameId = urlParams.get('id');
+
+    if (gameId) {
+        // Fetch the game details from Firebase
+        database.ref(`jogos/${gameId}`).once('value').then(snapshot => {
+            const jogo = snapshot.val();
+            if (jogo) {
+                renderGameDetails(jogo);
+                setupCategoryButtons(gameId);
+                calculateAndDisplayAverageRating(gameId); // Calculate and display average rating
+            } else {
+                document.getElementById('jogo-detalhes').innerHTML = '<p>Jogo não encontrado.</p>';
+            }
+        }).catch(error => {
+            console.error('Error fetching game details:', error);
+            document.getElementById('jogo-detalhes').innerHTML = '<p>Erro ao carregar detalhes do jogo.</p>';
+        });
+    } else {
+        document.getElementById('jogo-detalhes').innerHTML = '<p>ID do jogo não fornecido.</p>';
+    }
+});
