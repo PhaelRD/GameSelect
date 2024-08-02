@@ -77,3 +77,8 @@ h1 {
     background-color: #212529;
     color: #ffc107;
 }
+
+.carousel-item img {
+    height: 300px; /* Ajuste conforme necessário */
+    object-fit: cover; /* Garante que a imagem preencha o espaço */
+}

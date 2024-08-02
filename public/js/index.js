@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Usuário autenticado
             document.getElementById('logout-menu-item').style.display = 'block';
             document.getElementById('perfil-menu-item').style.display = 'block'; // Mostrar "Perfil" quando logado
+            document.getElementById('admin-menu-item').style.display = 'block';
             database.ref(`users/${user.uid}`).once('value').then(snapshot => {
                 const isAdmin = snapshot.val().admin || false;
                 document.getElementById('admin-menu-item').style.display = isAdmin ? 'block' : 'none';
