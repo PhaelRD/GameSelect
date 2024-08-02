@@ -32,7 +32,7 @@
                         <div id="alert-success" class="alert alert-success d-none" role="alert">
                             Login realizado com sucesso!
                         </div>
-                        <!-- Alerta de Erro Genérico -->
+                        <!-- Alerta de Erro -->
                         <div id="alert-error" class="alert alert-danger d-none" role="alert">
                             Erro ao entrar: <span id="error-message"></span>
                         </div>
@@ -47,11 +47,6 @@
                                 <input type="password" id="senha" class="form-control" placeholder="Senha" required>
                             </div>
                             <button type="submit" class="btn btn-warning btn-block">Entrar</button>
-
-                            <!-- Spinner de Carregamento -->
-                            <div id="spinner" class="spinner-border text-warning mt-3" role="status" style="display: none;">
-                                <span class="sr-only">Carregando...</span>
-                            </div>
                         </form>
                         <!-- Botão para Registro -->
                         <div class="text-center mt-3">
@@ -62,5 +57,13 @@
             </div>
         </div>
     </main>
+    
+    <!-- Spinner de Carregamento com Sobreposição -->
+    <div id="loading-overlay" class="d-none">
+        <div class="spinner-border text-warning" role="status">
+            <span class="sr-only">Carregando...</span>
+        </div>
+    </div>
+
 </body>
 </html>

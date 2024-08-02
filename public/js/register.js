@@ -1,4 +1,4 @@
-// Your web app's Firebase configuration
+// Configuração do Firebase
 var firebaseConfig = {
     apiKey: "AIzaSyC0rjXmQpkSk7BSUtWwDnnIaFsyDPtIz8o",
     authDomain: "emulando-6fa4e.firebaseapp.com",
@@ -8,49 +8,118 @@ var firebaseConfig = {
     messagingSenderId: "285091625419",
     appId: "1:285091625419:web:43d5d37d36cb100b3d1e4e",
     measurementId: "G-7LS6SXRR34"
-  };
-// Initialize Firebase
+};
+
+// Inicialize o Firebase
 firebase.initializeApp(firebaseConfig);
 
-// Reference to the Firebase Auth service and Database service
+// Referência ao serviço de autenticação do Firebase e ao banco de dados
 const auth = firebase.auth();
 const database = firebase.database();
 
-document.getElementById('register-form').addEventListener('submit', function(event) {
+// Obtenha referência ao formulário de registro
+const registerForm = document.getElementById('register-form');
+
+// Obtenha referência ao spinner
+const spinnerOverlay = document.getElementById('loading-overlay');
+
+// Obtenha referência aos alertas
+const alertSuccess = document.getElementById('alert-success');
+const alertError = document.getElementById('alert-error');
+const errorMessage = document.getElementById('error-message');
+
+// Função para mostrar alerta
+function showAlert(alertElement) {
+    alertElement.classList.remove('d-none');
+    setTimeout(() => {
+        alertElement.classList.add('d-none');
+    }, 3000); // Alerta some após 3 segundos
+}
+
+// Função para mostrar o spinner de carregamento
+function showLoadingSpinner() {
+    spinnerOverlay.classList.remove('d-none');
+}
+
+// Função para esconder o spinner de carregamento
+function hideLoadingSpinner() {
+    spinnerOverlay.classList.add('d-none');
+}
+
+// Adicione o ouvinte de evento de envio ao formulário
+registerForm.addEventListener('submit', function(event) {
     event.preventDefault();
 
-    // Get email and password from form
+    // Mostre o spinner de carregamento
+    showLoadingSpinner();
+
+    // Ocultar alertas anteriores
+    alertSuccess.classList.add('d-none');
+    alertError.classList.add('d-none');
+
+    // Obtenha o email e a senha do formulário
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
 
-    // Create a new user with email and password
+    // Crie um novo usuário com email e senha
     auth.createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
-            // User registered successfully
+            // Usuário registrado com sucesso
             const user = userCredential.user;
-            console.log('User registered:', user);
+            console.log('Usuário registrado:', user);
 
-            // Save additional user information in Realtime Database
+            // Salvar informações adicionais do usuário no banco de dados
             const userRef = database.ref('usuarios/' + user.uid);
             userRef.set({
                 email: email,
-                admin: false, // Default value for admin
-                favoritos: [] // Default empty list for favorites
+                admin: false, // Valor padrão para admin
+                favoritos: [] // Lista vazia padrão para favoritos
             })
             .then(() => {
-                console.log('User data saved to Realtime Database.');
-                // Redirect or show a success message
-                alert('Registro realizado com sucesso!');
-                window.location.href = 'index.html'; // Redirect to login page
+                console.log('Dados do usuário salvos no banco de dados.');
+                // Mostrar alerta de sucesso
+                showAlert(alertSuccess);
+
+                // Redirecionar após um pequeno atraso
+                setTimeout(() => {
+                    window.location.href = 'login.html'; // Redireciona para a página de login
+                }, 1500);
             })
             .catch((error) => {
-                console.error('Error saving user data:', error.message);
-                alert('Erro ao salvar dados do usuário: ' + error.message);
+                console.error('Erro ao salvar dados do usuário:', error.message);
+                errorMessage.textContent = 'Erro ao salvar dados do usuário: ' + error.message;
+                // Mostrar alerta de erro
+                showAlert(alertError);
+            })
+            .finally(() => {
+                // Sempre ocultar o spinner após finalizar
+                hideLoadingSpinner();
             });
         })
         .catch((error) => {
-            // Handle errors
-            console.error('Error registering user:', error.message);
-            alert('Erro ao registrar: ' + error.message);
+            // Lide com erros
+            console.error('Erro ao registrar usuário:', error.message);
+
+            // Identifique erros específicos
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    errorMessage.textContent = 'Este e-mail já está em uso.';
+                    break;
+                case 'auth/invalid-email':
+                    errorMessage.textContent = 'E-mail inválido.';
+                    break;
+                case 'auth/weak-password':
+                    errorMessage.textContent = 'Senha fraca. A senha deve ter pelo menos 6 caracteres.';
+                    break;
+                default:
+                    errorMessage.textContent = 'Erro ao registrar: ' + error.message;
+            }
+            
+            // Mostrar alerta de erro
+            showAlert(alertError);
+        })
+        .finally(() => {
+            // Sempre ocultar o spinner após finalizar
+            hideLoadingSpinner();
         });
 });

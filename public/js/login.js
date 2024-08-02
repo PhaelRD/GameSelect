@@ -20,7 +20,7 @@ const auth = firebase.auth();
 const loginForm = document.getElementById('login-form');
 
 // Obtenha referência ao spinner
-const spinner = document.getElementById('spinner');
+const spinnerOverlay = document.getElementById('loading-overlay');
 
 // Obtenha referência aos alertas
 const alertSuccess = document.getElementById('alert-success');
@@ -35,12 +35,22 @@ function showAlert(alertElement) {
     }, 3000); // Alerta some após 3 segundos
 }
 
+// Função para mostrar o spinner de carregamento
+function showLoadingSpinner() {
+    spinnerOverlay.classList.remove('d-none');
+}
+
+// Função para esconder o spinner de carregamento
+function hideLoadingSpinner() {
+    spinnerOverlay.classList.add('d-none');
+}
+
 // Adicione o ouvinte de evento de envio ao formulário
 loginForm.addEventListener('submit', function(event) {
     event.preventDefault();
 
-    // Mostre o spinner
-    spinner.style.display = 'block';
+    // Mostre o spinner de carregamento
+    showLoadingSpinner();
 
     // Ocultar alertas anteriores
     alertSuccess.classList.add('d-none');
@@ -53,9 +63,6 @@ loginForm.addEventListener('submit', function(event) {
     // Faça login com email e senha
     auth.signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
-            // Ocultar o spinner
-            spinner.style.display = 'none';
-
             // Usuário logado com sucesso
             const user = userCredential.user;
             console.log('Usuário logado:', user);
@@ -69,9 +76,6 @@ loginForm.addEventListener('submit', function(event) {
             }, 1500);
         })
         .catch((error) => {
-            // Ocultar o spinner
-            spinner.style.display = 'none';
-
             // Lide com erros
             console.error('Erro ao entrar:', error.message);
 
@@ -89,5 +93,9 @@ loginForm.addEventListener('submit', function(event) {
             
             // Mostrar alerta de erro
             showAlert(alertError);
+        })
+        .finally(() => {
+            // Sempre ocultar o spinner após finalizar
+            hideLoadingSpinner();
         });
 });
