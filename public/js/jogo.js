@@ -57,7 +57,6 @@ function renderGameDetails(jogo) {
     
         cardBody.appendChild(videoContainer);
     }
-    
 
     // Create and append the game description
     if (jogo.descricao) {
@@ -208,85 +207,79 @@ function setCategory(userId, gameId, category, nota = null) {
     }
 }
 
-// Calculate and display the average rating for the game
-function calculateAndDisplayAverageRating(gameId) {
-    const ratingsRef = database.ref(`usuarios`);
-    let totalRatings = 0;
-    let sumRatings = 0;
-
-    ratingsRef.once('value').then(snapshot => {
-        snapshot.forEach(userSnapshot => {
-            const userCategories = userSnapshot.val().categorias || {};
-
-            if (userCategories[gameId] && userCategories[gameId].status === 'zerado') {
-                const userRating = userCategories[gameId].nota;
-                sumRatings += userRating;
-                totalRatings++;
-            }
-        });
-
-        const averageRating = totalRatings > 0 ? (sumRatings / totalRatings).toFixed(1) : 'N/A'; // Changed to 1 decimal place
-        displayAverageRating(averageRating);
-    }).catch(error => {
-        console.error('Error calculating average rating:', error);
-        showModal('Erro', 'Erro ao calcular a média de notas. Tente novamente.');
-    });
-}
-
-// Display the average rating on the page
-function displayAverageRating(averageRating) {
-    const notaMediaDiv = document.getElementById('nota-media');
-    notaMediaDiv.innerHTML = `<h3>Média de notas: ${averageRating}/10</h3>`; // Format as X/10
-}
-
-// Update the game ratings after a user sets a new rating
-function updateGameRatings(gameId) {
-    calculateAndDisplayAverageRating(gameId);
-}
-
-// Logout function
-function logout() {
-    firebase.auth().signOut().then(() => {
-        window.location.href = 'index.html';
-    }).catch((error) => {
-        console.error('Error signing out: ', error);
-        showModal('Erro', 'Erro ao sair. Tente novamente.');
-    });
-}
-
-// Show modal with a message
+// Show a modal dialog with a message
 function showModal(title, message) {
-    const modalTitle = document.getElementById('alertModalLabel');
-    const modalBody = document.querySelector('#alertModal .modal-body');
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
 
     modalTitle.textContent = title;
     modalBody.textContent = message;
 
-    $('#alertModal').modal('show');
+    $('#messageModal').modal('show');
 }
 
-// On page load, check user authentication and fetch game details
-document.addEventListener('DOMContentLoaded', function() {
-    // Get the game ID from the URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const gameId = urlParams.get('id');
-
-    if (gameId) {
-        // Fetch the game details from Firebase
-        database.ref(`jogos/${gameId}`).once('value').then(snapshot => {
-            const jogo = snapshot.val();
-            if (jogo) {
-                renderGameDetails(jogo);
-                setupCategoryButtons(gameId);
-                calculateAndDisplayAverageRating(gameId); // Calculate and display average rating
-            } else {
-                document.getElementById('jogo-detalhes').innerHTML = '<p>Jogo não encontrado.</p>';
+// Update average game ratings
+function updateGameRatings(gameId) {
+    const ratingsRef = database.ref(`usuarios`);
+    const gameRatingsRef = database.ref(`jogos/${gameId}/avaliacoes`);
+    
+    ratingsRef.once('value').then(snapshot => {
+        const users = snapshot.val();
+        let totalRating = 0;
+        let ratingCount = 0;
+        
+        for (const userId in users) {
+            const userGames = users[userId].categorias;
+            if (userGames && userGames[gameId] && userGames[gameId].status === 'zerado') {
+                totalRating += userGames[gameId].nota;
+                ratingCount++;
             }
+        }
+        
+        const averageRating = ratingCount > 0 ? (totalRating / ratingCount).toFixed(2) : null;
+        
+        gameRatingsRef.set({
+            average: averageRating,
+            count: ratingCount
+        }).then(() => {
+            console.log('Average rating updated successfully.');
         }).catch(error => {
-            console.error('Error fetching game details:', error);
-            document.getElementById('jogo-detalhes').innerHTML = '<p>Erro ao carregar detalhes do jogo.</p>';
+            console.error('Error updating average rating:', error);
         });
-    } else {
-        document.getElementById('jogo-detalhes').innerHTML = '<p>ID do jogo não fornecido.</p>';
+    }).catch(error => {
+        console.error('Error fetching user data:', error);
+    });
+}
+
+// Fetch the game ID from the URL
+function getGameIdFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('id');
+}
+
+// Load game data and initialize the page
+function loadGameData() {
+    const gameId = getGameIdFromURL();
+    if (!gameId) {
+        showModal('Erro', 'Jogo não encontrado.');
+        return;
     }
-});
+
+    const gameRef = database.ref(`jogos/${gameId}`);
+
+    gameRef.once('value').then(snapshot => {
+        const gameData = snapshot.val();
+        if (gameData) {
+            renderGameDetails(gameData);
+            setupCategoryButtons(gameId);
+        } else {
+            showModal('Erro', 'Jogo não encontrado.');
+        }
+    }).catch(error => {
+        console.error('Erro ao buscar dados do jogo:', error);
+        showModal('Erro', 'Erro ao buscar dados do jogo. Tente novamente.');
+    });
+}
+
+// Call loadGameData when the window is loaded
+window.addEventListener('load', loadGameData);

@@ -28,6 +28,9 @@ const alertSuccess = document.getElementById('alert-success');
 const alertError = document.getElementById('alert-error');
 const errorMessage = document.getElementById('error-message');
 
+// Obtenha referência ao campo de nome de usuário
+const usernameField = document.getElementById('register-username');
+
 // Função para mostrar alerta
 function showAlert(alertElement) {
     alertElement.classList.remove('d-none');
@@ -46,6 +49,12 @@ function hideLoadingSpinner() {
     spinnerOverlay.classList.add('d-none');
 }
 
+// Função para verificar se o nome de usuário já existe
+function checkUsernameExists(username) {
+    return database.ref('usuarios').orderByChild('username').equalTo(username).once('value')
+        .then(snapshot => snapshot.exists());
+}
+
 // Adicione o ouvinte de evento de envio ao formulário
 registerForm.addEventListener('submit', function(event) {
     event.preventDefault();
@@ -57,69 +66,81 @@ registerForm.addEventListener('submit', function(event) {
     alertSuccess.classList.add('d-none');
     alertError.classList.add('d-none');
 
-    // Obtenha o email e a senha do formulário
+    // Obtenha o email, senha e nome de usuário do formulário
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
+    const username = usernameField.value;
 
-    // Crie um novo usuário com email e senha
-    auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            // Usuário registrado com sucesso
-            const user = userCredential.user;
-            console.log('Usuário registrado:', user);
-
-            // Salvar informações adicionais do usuário no banco de dados
-            const userRef = database.ref('usuarios/' + user.uid);
-            userRef.set({
-                email: email,
-                admin: false, // Valor padrão para admin
-                favoritos: [] // Lista vazia padrão para favoritos
-            })
-            .then(() => {
-                console.log('Dados do usuário salvos no banco de dados.');
-                // Mostrar alerta de sucesso
-                showAlert(alertSuccess);
-
-                // Redirecionar após um pequeno atraso
-                setTimeout(() => {
-                    window.location.href = 'login.html'; // Redireciona para a página de login
-                }, 1500);
-            })
-            .catch((error) => {
-                console.error('Erro ao salvar dados do usuário:', error.message);
-                errorMessage.textContent = 'Erro ao salvar dados do usuário: ' + error.message;
-                // Mostrar alerta de erro
-                showAlert(alertError);
-            })
-            .finally(() => {
-                // Sempre ocultar o spinner após finalizar
-                hideLoadingSpinner();
-            });
-        })
-        .catch((error) => {
-            // Lide com erros
-            console.error('Erro ao registrar usuário:', error.message);
-
-            // Identifique erros específicos
-            switch (error.code) {
-                case 'auth/email-already-in-use':
-                    errorMessage.textContent = 'Este e-mail já está em uso.';
-                    break;
-                case 'auth/invalid-email':
-                    errorMessage.textContent = 'E-mail inválido.';
-                    break;
-                case 'auth/weak-password':
-                    errorMessage.textContent = 'Senha fraca. A senha deve ter pelo menos 6 caracteres.';
-                    break;
-                default:
-                    errorMessage.textContent = 'Erro ao registrar: ' + error.message;
-            }
-            
-            // Mostrar alerta de erro
+    // Verifique se o nome de usuário já existe
+    checkUsernameExists(username).then(exists => {
+        if (exists) {
+            // Nome de usuário já existe
+            errorMessage.textContent = 'Nome de usuário já está em uso.';
             showAlert(alertError);
-        })
-        .finally(() => {
-            // Sempre ocultar o spinner após finalizar
             hideLoadingSpinner();
-        });
+        } else {
+            // Crie um novo usuário com email e senha
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Usuário registrado com sucesso
+                    const user = userCredential.user;
+                    console.log('Usuário registrado:', user);
+
+                    // Salvar informações adicionais do usuário no banco de dados
+                    const userRef = database.ref('usuarios/' + user.uid);
+                    userRef.set({
+                        email: email,
+                        username: username,
+                        admin: false, // Valor padrão para admin
+                        favoritos: [] // Lista vazia padrão para favoritos
+                    })
+                    .then(() => {
+                        console.log('Dados do usuário salvos no banco de dados.');
+                        // Mostrar alerta de sucesso
+                        showAlert(alertSuccess);
+
+                        // Redirecionar após um pequeno atraso
+                        setTimeout(() => {
+                            window.location.href = 'login.html'; // Redireciona para a página de login
+                        }, 1500);
+                    })
+                    .catch((error) => {
+                        console.error('Erro ao salvar dados do usuário:', error.message);
+                        errorMessage.textContent = 'Erro ao salvar dados do usuário: ' + error.message;
+                        // Mostrar alerta de erro
+                        showAlert(alertError);
+                    })
+                    .finally(() => {
+                        // Sempre ocultar o spinner após finalizar
+                        hideLoadingSpinner();
+                    });
+                })
+                .catch((error) => {
+                    // Lide com erros
+                    console.error('Erro ao registrar usuário:', error.message);
+
+                    // Identifique erros específicos
+                    switch (error.code) {
+                        case 'auth/email-already-in-use':
+                            errorMessage.textContent = 'Este e-mail já está em uso.';
+                            break;
+                        case 'auth/invalid-email':
+                            errorMessage.textContent = 'E-mail inválido.';
+                            break;
+                        case 'auth/weak-password':
+                            errorMessage.textContent = 'Senha fraca. A senha deve ter pelo menos 6 caracteres.';
+                            break;
+                        default:
+                            errorMessage.textContent = 'Erro ao registrar: ' + error.message;
+                    }
+                    
+                    // Mostrar alerta de erro
+                    showAlert(alertError);
+                })
+                .finally(() => {
+                    // Sempre ocultar o spinner após finalizar
+                    hideLoadingSpinner();
+                });
+        }
+    });
 });
