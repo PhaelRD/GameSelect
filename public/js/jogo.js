@@ -57,6 +57,7 @@ function renderGameDetails(jogo) {
     
         cardBody.appendChild(videoContainer);
     }
+    
 
     // Create and append the game description
     if (jogo.descricao) {
@@ -135,7 +136,6 @@ function renderGameDetails(jogo) {
     detalhesDiv.appendChild(cardBody);
 }
 
-// Set up the category buttons
 function setupCategoryButtons(gameId) {
     const desejadosButton = document.getElementById('desejados-botao');
     const jogandoButton = document.getElementById('jogando-botao');
@@ -143,36 +143,38 @@ function setupCategoryButtons(gameId) {
     const notaZeradoDiv = document.getElementById('nota-zerado');
     const enviarNotaButton = document.getElementById('enviar-nota');
     const notaInput = document.getElementById('nota');
+    const resenhaInput = document.getElementById('resenha');
 
     auth.onAuthStateChanged(user => {
         if (user) {
             const userId = user.uid;
-            // Add event listeners for category buttons
+            // Adiciona os ouvintes de eventos para os botões de categoria
             desejadosButton.addEventListener('click', () => setCategory(userId, gameId, 'desejado'));
             jogandoButton.addEventListener('click', () => setCategory(userId, gameId, 'jogando'));
             zeradoButton.addEventListener('click', () => {
-                notaZeradoDiv.style.display = 'block'; // Show rating input when "Zerado" is selected
+                notaZeradoDiv.style.display = 'block'; // Mostra o campo de nota e resenha quando "Zerado" é selecionado
             });
 
             enviarNotaButton.addEventListener('click', () => {
                 const nota = parseInt(notaInput.value);
+                const resenha = resenhaInput.value.trim();
                 if (nota >= 1 && nota <= 10) {
-                    setCategory(userId, gameId, 'zerado', nota);
-                    notaZeradoDiv.style.display = 'none'; // Hide rating input after submitting
+                    setCategory(userId, gameId, 'zerado', nota, resenha);
+                    notaZeradoDiv.style.display = 'none'; // Esconde o campo de nota e resenha após enviar
                 } else {
                     showModal('Erro', 'Por favor, insira uma nota válida entre 1 e 10.');
                 }
             });
 
-            // Show profile and logout menu items
+            // Mostra os itens do menu de perfil e logout
             document.getElementById('perfil-menu-item').style.display = 'block';
             document.getElementById('logout-menu-item').style.display = 'block';
         } else {
-            // Hide profile and logout menu items
+            // Esconde os itens do menu de perfil e logout
             document.getElementById('perfil-menu-item').style.display = 'none';
             document.getElementById('logout-menu-item').style.display = 'none';
 
-            // Add event listeners for category buttons when user is not logged in
+            // Adiciona ouvintes de eventos para os botões de categoria quando o usuário não está logado
             desejadosButton.addEventListener('click', () => showModal('Aviso', 'Você precisa estar logado para adicionar jogos aos desejados.'));
             jogandoButton.addEventListener('click', () => showModal('Aviso', 'Você precisa estar logado para adicionar jogos aos jogando.'));
             zeradoButton.addEventListener('click', () => showModal('Aviso', 'Você precisa estar logado para marcar jogos como zerado.'));
@@ -180,17 +182,20 @@ function setupCategoryButtons(gameId) {
     });
 }
 
-// Set the category for the game in the user's profile
-function setCategory(userId, gameId, category, nota = null) {
+// Define a categoria do jogo no perfil do usuário
+function setCategory(userId, gameId, category, nota = null, resenha = null) {
     const userGameRef = database.ref(`usuarios/${userId}/categorias/${gameId}`);
-    
+    const timestamp = new Date().toISOString(); // Data e horário atuais em formato ISO
+
     if (category === 'zerado' && nota !== null) {
         userGameRef.set({
             status: category,
-            nota: nota
+            nota: nota,
+            resenha: resenha,
+            timestamp: timestamp // Adiciona data e horário
         }).then(() => {
-            showModal('Sucesso', 'Jogo marcado como zerado e nota enviada!');
-            updateGameRatings(gameId); // Update ratings after setting the game as completed
+            showModal('Sucesso', 'Jogo marcado como zerado e nota e resenha enviadas!');
+            updateGameRatings(gameId); // Atualiza as avaliações após marcar o jogo como zerado
         }).catch(error => {
             console.error('Erro ao atualizar categoria do jogo:', error);
             showModal('Erro', 'Erro ao atualizar categoria do jogo. Tente novamente.');
@@ -207,79 +212,86 @@ function setCategory(userId, gameId, category, nota = null) {
     }
 }
 
-// Show a modal dialog with a message
+
+// Calculate and display the average rating for the game
+function calculateAndDisplayAverageRating(gameId) {
+    const ratingsRef = database.ref(`usuarios`);
+    let totalRatings = 0;
+    let sumRatings = 0;
+
+    ratingsRef.once('value').then(snapshot => {
+        snapshot.forEach(userSnapshot => {
+            const userCategories = userSnapshot.val().categorias || {};
+
+            if (userCategories[gameId] && userCategories[gameId].status === 'zerado') {
+                const userRating = userCategories[gameId].nota;
+                sumRatings += userRating;
+                totalRatings++;
+            }
+        });
+
+        const averageRating = totalRatings > 0 ? (sumRatings / totalRatings).toFixed(1) : 'N/A'; // Changed to 1 decimal place
+        displayAverageRating(averageRating);
+    }).catch(error => {
+        console.error('Error calculating average rating:', error);
+        showModal('Erro', 'Erro ao calcular a média de notas. Tente novamente.');
+    });
+}
+
+// Display the average rating on the page
+function displayAverageRating(averageRating) {
+    const notaMediaDiv = document.getElementById('nota-media');
+    notaMediaDiv.innerHTML = `<h3>Média de notas: ${averageRating}/10</h3>`; // Format as X/10
+}
+
+// Update the game ratings after a user sets a new rating
+function updateGameRatings(gameId) {
+    calculateAndDisplayAverageRating(gameId);
+}
+
+// Logout function
+function logout() {
+    firebase.auth().signOut().then(() => {
+        window.location.href = 'index.html';
+    }).catch((error) => {
+        console.error('Error signing out: ', error);
+        showModal('Erro', 'Erro ao sair. Tente novamente.');
+    });
+}
+
+// Show modal with a message
 function showModal(title, message) {
-    const modalTitle = document.getElementById('modal-title');
-    const modalBody = document.getElementById('modal-body');
+    const modalTitle = document.getElementById('alertModalLabel');
+    const modalBody = document.querySelector('#alertModal .modal-body');
 
     modalTitle.textContent = title;
     modalBody.textContent = message;
 
-    $('#messageModal').modal('show');
+    $('#alertModal').modal('show');
 }
 
-// Update average game ratings
-function updateGameRatings(gameId) {
-    const ratingsRef = database.ref(`usuarios`);
-    const gameRatingsRef = database.ref(`jogos/${gameId}/avaliacoes`);
-    
-    ratingsRef.once('value').then(snapshot => {
-        const users = snapshot.val();
-        let totalRating = 0;
-        let ratingCount = 0;
-        
-        for (const userId in users) {
-            const userGames = users[userId].categorias;
-            if (userGames && userGames[gameId] && userGames[gameId].status === 'zerado') {
-                totalRating += userGames[gameId].nota;
-                ratingCount++;
+// On page load, check user authentication and fetch game details
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the game ID from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const gameId = urlParams.get('id');
+
+    if (gameId) {
+        // Fetch the game details from Firebase
+        database.ref(`jogos/${gameId}`).once('value').then(snapshot => {
+            const jogo = snapshot.val();
+            if (jogo) {
+                renderGameDetails(jogo);
+                setupCategoryButtons(gameId);
+                calculateAndDisplayAverageRating(gameId); // Calculate and display average rating
+            } else {
+                document.getElementById('jogo-detalhes').innerHTML = '<p>Jogo não encontrado.</p>';
             }
-        }
-        
-        const averageRating = ratingCount > 0 ? (totalRating / ratingCount).toFixed(2) : null;
-        
-        gameRatingsRef.set({
-            average: averageRating,
-            count: ratingCount
-        }).then(() => {
-            console.log('Average rating updated successfully.');
         }).catch(error => {
-            console.error('Error updating average rating:', error);
+            console.error('Error fetching game details:', error);
+            document.getElementById('jogo-detalhes').innerHTML = '<p>Erro ao carregar detalhes do jogo.</p>';
         });
-    }).catch(error => {
-        console.error('Error fetching user data:', error);
-    });
-}
-
-// Fetch the game ID from the URL
-function getGameIdFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('id');
-}
-
-// Load game data and initialize the page
-function loadGameData() {
-    const gameId = getGameIdFromURL();
-    if (!gameId) {
-        showModal('Erro', 'Jogo não encontrado.');
-        return;
+    } else {
+        document.getElementById('jogo-detalhes').innerHTML = '<p>ID do jogo não fornecido.</p>';
     }
-
-    const gameRef = database.ref(`jogos/${gameId}`);
-
-    gameRef.once('value').then(snapshot => {
-        const gameData = snapshot.val();
-        if (gameData) {
-            renderGameDetails(gameData);
-            setupCategoryButtons(gameId);
-        } else {
-            showModal('Erro', 'Jogo não encontrado.');
-        }
-    }).catch(error => {
-        console.error('Erro ao buscar dados do jogo:', error);
-        showModal('Erro', 'Erro ao buscar dados do jogo. Tente novamente.');
-    });
-}
-
-// Call loadGameData when the window is loaded
-window.addEventListener('load', loadGameData);
+});

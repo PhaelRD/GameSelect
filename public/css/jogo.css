@@ -118,6 +118,13 @@ h3 {
     margin: 10px auto; /* Centralizar */
 }
 
+/* Estilos do Textarea de Resenha */
+#nota-zerado #resenha {
+    width: calc(100% - 20px); /* Largura da caixa de resenha */
+    margin: 10px auto; /* Centralizar */
+    min-height: 100px; /* Altura mínima */
+}
+
 /* Estilos do Modal */
 .modal-content {
     border-radius: 10px; /* Bordas arredondadas */
@@ -166,5 +173,10 @@ h3 {
 
     #nota-zerado .form-control {
         width: 80px; /* Menor largura do input */
+    }
+    
+    /* Ajuste do Textarea em dispositivos menores */
+    #nota-zerado #resenha {
+        width: calc(100% - 20px); /* Ajustar largura */
     }
 }

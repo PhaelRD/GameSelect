@@ -54,20 +54,26 @@ function renderCategoryList(categorias, category, containerId) {
     }
 }
 
-// Render completed games with ratings
+// Render completed games with ratings and reviews
 function renderCompletedList(categorias, category, containerId) {
     const container = document.getElementById(containerId);
     container.innerHTML = '';
 
     for (const gameId in categorias) {
         if (categorias[gameId].status === category) {
-            createGameElement(gameId, container, categorias[gameId].nota);
+            createGameElement(
+                gameId,
+                container,
+                categorias[gameId].nota,
+                categorias[gameId].resenha,
+                categorias[gameId].timestamp
+            );
         }
     }
 }
 
 // Create an HTML element for a game
-function createGameElement(gameId, container, userRating = null) {
+function createGameElement(gameId, container, userRating = null, review = null, timestamp = null) {
     const gameRef = database.ref(`jogos/${gameId}`);
 
     gameRef.once('value').then(snapshot => {
@@ -100,6 +106,13 @@ function createGameElement(gameId, container, userRating = null) {
                 const userRatingElement = document.createElement('p');
                 userRatingElement.textContent = `Sua Nota: ${userRating}/10`;
                 gameDiv.appendChild(userRatingElement);
+            }
+
+            // Add review if available
+            if (review !== null) {
+                const reviewElement = document.createElement('p');
+                reviewElement.textContent = `Resenha: ${review}`;
+                gameDiv.appendChild(reviewElement);
             }
 
             // Fetch and display the average rating
