@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes do Jogo</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/jogo.css">
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-database.js"></script>
@@ -16,8 +16,11 @@
         <nav>
             <ul>
                 <li><a href="index.html">Home</a></li>
-                <li id="perfil-menu-item" style="display: none;"><a href="perfil.html">Perfil</a></li>
-                <li id="logout-menu-item"><a href="#" onclick="logout()">Logout</a></li>
+                <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+                <li class="nav-item"><a class="nav-link" href="register.html">Registrar</a></li>
+                <li class="nav-item" id="perfil-menu-item" style="display: none;"><a class="nav-link" href="perfil.html">Perfil</a></li>
+                <li class="nav-item" id="admin-menu-item" style="display: none;"><a class="nav-link" href="admin.html">Admin</a></li>
+                <li class="nav-item" id="logout-menu-item" style="display: none;"><a class="nav-link" href="#" onclick="logout()">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -28,14 +31,16 @@
         <div id="nota-media">
             <!-- Média de notas do jogo será exibida aqui -->
         </div>
-        <h4>Para usar essa função você deve estar logado.</h4>
-        <button id="desejados-botao">Adicionar aos Desejados</button>
-        <button id="jogando-botao">Adicionar aos Jogando</button>
-        <button id="zerado-botao">Marcar como Zerado</button>
-        <div id="nota-zerado" style="display: none;">
-            <label for="nota">Dê uma nota de 1 a 10:</label>
-            <input type="number" id="nota" min="1" max="10">
-            <button id="enviar-nota">Enviar Nota</button>
+        <div id="adicionar-perfil">
+            <h4>Para usar essa função você deve estar logado.</h4>
+            <button id="desejados-botao">Desejados</button>
+            <button id="jogando-botao">Jogando</button>
+            <button id="zerado-botao">Zerado</button>
+            <div id="nota-zerado" style="display: none;">
+                <label for="nota">Dê uma nota de 1 a 10:</label>
+                <input type="number" id="nota" min="1" max="10">
+                <button id="enviar-nota">Enviar Nota</button>
+            </div>
         </div>
     </main>
 </body>
