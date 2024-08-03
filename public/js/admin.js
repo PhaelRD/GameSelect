@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Get values from the form
         const nome = document.getElementById('nome').value || '';
         const imagem = document.getElementById('imagem').value || '';
+        const descricao = document.getElementById('descricao').value || ''; // Ensure description is included
         const video = document.getElementById('video').value || '';
 
         // Get selected values for platforms and genres
@@ -108,6 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const gameData = {
             nome: nome,
             imagem: imagem,
+            descricao: descricao, // Include description
             video: video,
             plataformas: plataformas,
             generos: generos,
@@ -136,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const game = snapshot.val();
             document.getElementById('nome').value = game.nome || '';
             document.getElementById('imagem').value = game.imagem || '';
-            document.getElementById('descricao').value = game.descricao || '';
+            document.getElementById('descricao').value = game.descricao || ''; // Populate description
             document.getElementById('video').value = game.video || '';
             gameIdInput.value = gameId;
 

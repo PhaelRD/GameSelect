@@ -159,18 +159,24 @@ function renderGames(jogos) {
             const adElement = document.createElement('div');
             adElement.classList.add('col-lg-4', 'col-md-6', 'mb-4'); // Mesmo tamanho dos cards de jogo
             adElement.innerHTML = `
-                <div class="card ad-card bg-warning text-dark shadow-sm h-100">
-                    <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                        <h5 class="card-title">Anúncio</h5>
-                        <p class="card-text">Insira seu anúncio aqui!</p>
-                        <a href="https://www.seuanuncio.com" target="_blank" class="btn btn-dark">Clique aqui</a>
-                    </div>
-                </div>
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5056247631901477"
+                crossorigin="anonymous"></script>
+            <!-- anuncio -->
+            <ins class="adsbygoogle"
+                style="display:block"
+                data-ad-client="ca-pub-5056247631901477"
+                data-ad-slot="1644996101"
+                data-ad-format="auto"
+                data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
             `;
             gameList.appendChild(adElement);
         }
     }
 }
+
 
 // Filtrar jogos com base na entrada de pesquisa e filtros selecionados
 function filterGames() {
