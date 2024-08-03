@@ -25,80 +25,99 @@ function renderGameDetails(jogo) {
     // Create and append the game title
     const gameTitle = document.createElement('h2');
     gameTitle.textContent = jogo.nome;
+    gameTitle.classList.add('card-header'); // Use card header class
     detalhesDiv.appendChild(gameTitle);
 
     // Create and append the game image
     const gameImage = document.createElement('img');
     gameImage.src = jogo.imagem;
     gameImage.alt = jogo.nome;
+    gameImage.classList.add('card-img-top'); // Use Bootstrap class for image
     detalhesDiv.appendChild(gameImage);
+
+    // Create card body
+    const cardBody = document.createElement('div');
+    cardBody.classList.add('card-body');
 
     // Create and append the game video
     if (jogo.video) {
         const videoId = jogo.video.split('/').pop(); // Extract video ID from the URL
         const gameVideo = document.createElement('iframe');
         gameVideo.src = `https://www.youtube.com/embed/${videoId}`;
-        gameVideo.width = "560";
-        gameVideo.height = "315";
+        gameVideo.width = "720";
+        gameVideo.height = "400";
         gameVideo.frameBorder = "0";
         gameVideo.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
         gameVideo.allowFullscreen = true;
-        detalhesDiv.appendChild(gameVideo);
+    
+        // Create a container for the video
+        const videoContainer = document.createElement('div');
+        videoContainer.style.textAlign = 'center'; // Center align the container
+        videoContainer.appendChild(gameVideo);
+    
+        cardBody.appendChild(videoContainer);
     }
+    
 
     // Create and append the game description
     if (jogo.descricao) {
         const gameDescription = document.createElement('p');
         gameDescription.textContent = jogo.descricao;
-        detalhesDiv.appendChild(gameDescription);
+        cardBody.appendChild(gameDescription);
     }
 
     // Create and append the genres
     if (jogo.generos && jogo.generos.length > 0) {
         const genreList = document.createElement('ul');
+        genreList.classList.add('list-group'); // Use Bootstrap list group
         const genreTitle = document.createElement('h3');
         genreTitle.textContent = 'Gêneros:';
-        detalhesDiv.appendChild(genreTitle);
+        cardBody.appendChild(genreTitle);
 
         jogo.generos.forEach(genero => {
             const listItem = document.createElement('li');
             listItem.textContent = genero;
+            listItem.classList.add('list-group-item'); // Use Bootstrap list group item
             genreList.appendChild(listItem);
         });
 
-        detalhesDiv.appendChild(genreList);
+        cardBody.appendChild(genreList);
     } else {
-        detalhesDiv.innerHTML += '<p>Não há gêneros disponíveis para este jogo.</p>';
+        cardBody.innerHTML += '<p>Não há gêneros disponíveis para este jogo.</p>';
     }
 
     // Create and append the platforms
     if (jogo.plataformas && jogo.plataformas.length > 0) {
         const platformList = document.createElement('ul');
+        platformList.classList.add('list-group'); // Use Bootstrap list group
         const platformTitle = document.createElement('h3');
         platformTitle.textContent = 'Plataformas:';
-        detalhesDiv.appendChild(platformTitle);
+        cardBody.appendChild(platformTitle);
 
         jogo.plataformas.forEach(plataforma => {
             const listItem = document.createElement('li');
             listItem.textContent = plataforma;
+            listItem.classList.add('list-group-item'); // Use Bootstrap list group item
             platformList.appendChild(listItem);
         });
 
-        detalhesDiv.appendChild(platformList);
+        cardBody.appendChild(platformList);
     } else {
-        detalhesDiv.innerHTML += '<p>Não há plataformas disponíveis para este jogo.</p>';
+        cardBody.innerHTML += '<p>Não há plataformas disponíveis para este jogo.</p>';
     }
 
     // Create and append the links
     if (jogo.links && Object.keys(jogo.links).length > 0) {
         const linksList = document.createElement('ul');
+        linksList.classList.add('list-group'); // Use Bootstrap list group
         const linksTitle = document.createElement('h3');
         linksTitle.textContent = 'Links:';
-        detalhesDiv.appendChild(linksTitle);
+        cardBody.appendChild(linksTitle);
 
         Object.keys(jogo.links).forEach(key => {
             const link = jogo.links[key];
             const listItem = document.createElement('li');
+            listItem.classList.add('list-group-item'); // Use Bootstrap list group item
 
             const linkElement = document.createElement('a');
             linkElement.href = link.url;
@@ -109,10 +128,12 @@ function renderGameDetails(jogo) {
             linksList.appendChild(listItem);
         });
 
-        detalhesDiv.appendChild(linksList);
+        cardBody.appendChild(linksList);
     } else {
-        detalhesDiv.innerHTML += '<p>Não há links disponíveis para este jogo.</p>';
+        cardBody.innerHTML += '<p>Não há links disponíveis para este jogo.</p>';
     }
+
+    detalhesDiv.appendChild(cardBody);
 }
 
 // Set up the category buttons
@@ -140,7 +161,7 @@ function setupCategoryButtons(gameId) {
                     setCategory(userId, gameId, 'zerado', nota);
                     notaZeradoDiv.style.display = 'none'; // Hide rating input after submitting
                 } else {
-                    alert('Por favor, insira uma nota válida entre 1 e 10.');
+                    showModal('Erro', 'Por favor, insira uma nota válida entre 1 e 10.');
                 }
             });
 
@@ -152,6 +173,10 @@ function setupCategoryButtons(gameId) {
             document.getElementById('perfil-menu-item').style.display = 'none';
             document.getElementById('logout-menu-item').style.display = 'none';
 
+            // Add event listeners for category buttons when user is not logged in
+            desejadosButton.addEventListener('click', () => showModal('Aviso', 'Você precisa estar logado para adicionar jogos aos desejados.'));
+            jogandoButton.addEventListener('click', () => showModal('Aviso', 'Você precisa estar logado para adicionar jogos aos jogando.'));
+            zeradoButton.addEventListener('click', () => showModal('Aviso', 'Você precisa estar logado para marcar jogos como zerado.'));
         }
     });
 }
@@ -165,18 +190,20 @@ function setCategory(userId, gameId, category, nota = null) {
             status: category,
             nota: nota
         }).then(() => {
-            alert('Jogo marcado como zerado e nota enviada!');
+            showModal('Sucesso', 'Jogo marcado como zerado e nota enviada!');
             updateGameRatings(gameId); // Update ratings after setting the game as completed
         }).catch(error => {
             console.error('Erro ao atualizar categoria do jogo:', error);
+            showModal('Erro', 'Erro ao atualizar categoria do jogo. Tente novamente.');
         });
     } else {
         userGameRef.set({
             status: category
         }).then(() => {
-            alert(`Jogo adicionado aos ${category}!`);
+            showModal('Sucesso', `Jogo adicionado aos ${category}!`);
         }).catch(error => {
             console.error('Erro ao atualizar categoria do jogo:', error);
+            showModal('Erro', 'Erro ao atualizar categoria do jogo. Tente novamente.');
         });
     }
 }
@@ -202,6 +229,7 @@ function calculateAndDisplayAverageRating(gameId) {
         displayAverageRating(averageRating);
     }).catch(error => {
         console.error('Error calculating average rating:', error);
+        showModal('Erro', 'Erro ao calcular a média de notas. Tente novamente.');
     });
 }
 
@@ -222,7 +250,19 @@ function logout() {
         window.location.href = 'index.html';
     }).catch((error) => {
         console.error('Error signing out: ', error);
+        showModal('Erro', 'Erro ao sair. Tente novamente.');
     });
+}
+
+// Show modal with a message
+function showModal(title, message) {
+    const modalTitle = document.getElementById('alertModalLabel');
+    const modalBody = document.querySelector('#alertModal .modal-body');
+
+    modalTitle.textContent = title;
+    modalBody.textContent = message;
+
+    $('#alertModal').modal('show');
 }
 
 // On page load, check user authentication and fetch game details
