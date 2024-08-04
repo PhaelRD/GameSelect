@@ -18,67 +18,73 @@ const auth = firebase.auth();
 const database = firebase.database();
 
 document.addEventListener('DOMContentLoaded', function() {
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            const userId = user.uid;
-            loadUserProfile(userId);
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
+    
+    if (userId) {
+        loadUserProfile(userId);
+    } else {
+        window.location.href = 'index.html'; // Redirect to home if no userId
+    }
+    
+    // Add friend button click handler
+    document.getElementById('add-friend-btn').addEventListener('click', function() {
+        if (auth.currentUser) {
+            const currentUserId = auth.currentUser.uid;
+            addFriend(currentUserId, userId);
         } else {
-            window.location.href = 'index.html'; // Redirect to home if not logged in
+            alert('Você precisa estar logado para adicionar amigos.');
         }
     });
 });
 
-// Load user profile data including friends
+// Load user profile data
 function loadUserProfile(userId) {
     const userRef = database.ref(`usuarios/${userId}`);
 
     userRef.once('value').then(snapshot => {
-        const userData = snapshot.val() || {};
-        const categorias = userData.categorias || {};
-
-        renderCategoryList(categorias, 'desejado', 'desejados-lista');
-        renderCategoryList(categorias, 'jogando', 'jogando-lista');
-        renderCompletedList(categorias, 'zerado', 'zerado-lista');
-
-        // Load friends list
-        renderFriendsList(userId, 'amigos-lista');
+        const userData = snapshot.val();
+        if (userData) {
+            const perfilInfo = document.getElementById('perfil-info');
+            perfilInfo.innerHTML = `
+                <h3>Nome: ${userData.username || 'Desconhecido'}</h3>
+            `;
+            renderFriendsList(userId, 'amigos-lista');
+            renderGameList(userId, 'desejados', 'jogos-desejados-lista');
+            renderGameList(userId, 'jogando', 'jogos-jogando-lista');
+            renderGameList(userId, 'zerado', 'jogos-zerados-lista');
+        }
     }).catch(error => {
-        console.error('Error loading user profile:', error);
+        console.error('Erro ao carregar perfil do amigo:', error);
     });
 }
 
-// Render a list of games in a specific category
-function renderCategoryList(categorias, category, containerId) {
+// Render game list for a specific category
+function renderGameList(userId, category, containerId) {
     const container = document.getElementById(containerId);
     container.innerHTML = '';
 
-    for (const gameId in categorias) {
-        if (categorias[gameId].status === category) {
-            createGameElement(gameId, container);
-        }
-    }
-}
+    const userRef = database.ref(`usuarios/${userId}/categorias`);
+    userRef.once('value').then(snapshot => {
+        const categorias = snapshot.val() || {};
 
-// Render completed games with ratings and reviews
-function renderCompletedList(categorias, category, containerId) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = '';
-
-    for (const gameId in categorias) {
-        if (categorias[gameId].status === category) {
-            createGameElement(
-                gameId,
-                container,
-                categorias[gameId].nota,
-                categorias[gameId].resenha,
-                categorias[gameId].timestamp
-            );
+        for (const gameId in categorias) {
+            if (categorias[gameId].status === category) {
+                createGameElement(
+                    gameId,
+                    container,
+                    categorias[gameId].nota,
+                    categorias[gameId].resenha
+                );
+            }
         }
-    }
+    }).catch(error => {
+        console.error('Erro ao renderizar lista de jogos:', error);
+    });
 }
 
 // Create an HTML element for a game
-function createGameElement(gameId, container, userRating = null, review = null, timestamp = null) {
+function createGameElement(gameId, container, userRating = null, review = null) {
     const gameRef = database.ref(`jogos/${gameId}`);
 
     gameRef.once('value').then(snapshot => {
@@ -137,58 +143,58 @@ function createGameElement(gameId, container, userRating = null, review = null, 
             container.appendChild(gameDiv);
         }
     }).catch(error => {
-        console.error('Error loading game details:', error);
+        console.error('Erro ao carregar detalhes do jogo:', error);
     });
 }
 
-// Fetch average rating for a specific game
+// Fetch the average rating for a game
 function fetchAverageRating(gameId) {
-    return new Promise((resolve, reject) => {
-        database.ref('usuarios').once('value').then(snapshot => {
-            const users = snapshot.val() || {};
-            let sum = 0;
-            let count = 0;
-
-            for (const userId in users) {
-                const categorias = users[userId].categorias || {};
-                if (categorias[gameId] && categorias[gameId].status === 'zerado') {
-                    sum += categorias[gameId].nota;
-                    count += 1;
-                }
-            }
-
-            if (count > 0) {
-                const average = (sum / count).toFixed(1);
-                resolve(`${average}/10`);
-            } else {
-                resolve('N/A');
-            }
-        }).catch(error => {
-            console.error('Error fetching average rating:', error);
-            resolve('N/A');
-        });
+    const ratingsRef = database.ref(`jogos/${gameId}/avaliacoes`);
+    return ratingsRef.once('value').then(snapshot => {
+        const ratings = snapshot.val() || [];
+        if (ratings.length > 0) {
+            const sum = ratings.reduce((acc, rating) => acc + rating, 0);
+            return (sum / ratings.length).toFixed(1);
+        }
+        return 'N/A';
     });
 }
 
-// Fetch number of likes for a specific game
+// Fetch the number of likes for a game
 function fetchNumberOfLikes(gameId) {
-    return new Promise((resolve, reject) => {
-        database.ref('usuarios').once('value').then(snapshot => {
-            const users = snapshot.val() || {};
-            let totalLikes = 0;
+    const likesRef = database.ref(`jogos/${gameId}/curtidas`);
+    return likesRef.once('value').then(snapshot => {
+        const likes = snapshot.val() || 0;
+        return likes;
+    });
+}
 
-            for (const userId in users) {
-                const categorias = users[userId].categorias || {};
-                if (categorias[gameId] && categorias[gameId].status === 'zerado') {
-                    totalLikes += categorias[gameId].likes || 0;
-                }
-            }
+// Add a friend to the user's friends list
+function addFriend(currentUserId, friendId) {
+    const friendsRef = database.ref(`usuarios/${currentUserId}/amigos`);
+    friendsRef.once('value').then(snapshot => {
+        const friends = snapshot.val() || [];
+        if (!friends.includes(friendId)) {
+            friends.push(friendId);
+            friendsRef.set(friends).then(() => {
+                alert('Amigo adicionado com sucesso!');
+            }).catch(error => {
+                console.error('Erro ao adicionar amigo:', error);
+            });
+        } else {
+            alert('Este usuário já é um amigo.');
+        }
+    }).catch(error => {
+        console.error('Erro ao carregar lista de amigos:', error);
+    });
+}
 
-            resolve(totalLikes);
-        }).catch(error => {
-            console.error('Error fetching number of likes:', error);
-            resolve(0);
-        });
+// Logout function
+function logout() {
+    firebase.auth().signOut().then(() => {
+        window.location.href = 'index.html';
+    }).catch((error) => {
+        console.error('Erro ao sair: ', error);
     });
 }
 
@@ -220,51 +226,16 @@ function renderFriendsList(userId, containerId) {
                         friendLink.appendChild(friendName);
 
                         friendDiv.appendChild(friendLink);
-
-                        // Add 'Unfollow' button
-                        const unfollowButton = document.createElement('button');
-                        unfollowButton.textContent = 'Deixar de Seguir';
-                        unfollowButton.onclick = () => unfollowUser(userId, friendId);
-                        friendDiv.appendChild(unfollowButton);
-
                         container.appendChild(friendDiv);
                     }
                 }).catch(error => {
-                    console.error('Error loading friend data:', error);
+                    console.error('Erro ao carregar dados do amigo:', error);
                 });
             });
         } else {
-            container.innerHTML = '<p>Você não tem amigos para exibir.</p>';
+            container.innerHTML = '<p>Não há amigos para exibir.</p>';
         }
     }).catch(error => {
-        console.error('Error loading friends list:', error);
-    });
-}
-
-// Unfollow a user
-function unfollowUser(userId, friendId) {
-    const userRef = database.ref(`usuarios/${userId}/amigos`);
-    userRef.once('value').then(snapshot => {
-        const amigos = snapshot.val() || [];
-        const updatedFriends = amigos.filter(id => id !== friendId);
-
-        // Update the user's friends list
-        userRef.set(updatedFriends).then(() => {
-            alert('Você deixou de seguir este usuário.');
-            loadUserProfile(userId); // Reload profile to reflect changes
-        }).catch(error => {
-            console.error('Error unfollowing user:', error);
-        });
-    }).catch(error => {
-        console.error('Error loading user friends:', error);
-    });
-}
-
-// Logout function
-function logout() {
-    firebase.auth().signOut().then(() => {
-        window.location.href = 'index.html'; // Redirect to home after logout
-    }).catch(error => {
-        console.error('Error signing out:', error);
+        console.error('Erro ao carregar lista de amigos:', error);
     });
 }
