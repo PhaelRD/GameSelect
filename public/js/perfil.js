@@ -122,6 +122,13 @@ function createGameElement(gameId, container, userRating = null, review = null, 
                 gameDiv.appendChild(averageRatingElement);
             });
 
+            // Fetch and display the number of likes
+            fetchNumberOfLikes(gameId).then(numberOfLikes => {
+                const likesElement = document.createElement('p');
+                likesElement.textContent = `Curtidas: ${numberOfLikes}`;
+                gameDiv.appendChild(likesElement);
+            });
+
             container.appendChild(gameDiv);
         }
     }).catch(error => {
@@ -154,6 +161,28 @@ function fetchAverageRating(gameId) {
         }).catch(error => {
             console.error('Error fetching average rating:', error);
             resolve('N/A');
+        });
+    });
+}
+
+// Fetch number of likes for a specific game
+function fetchNumberOfLikes(gameId) {
+    return new Promise((resolve, reject) => {
+        database.ref('usuarios').once('value').then(snapshot => {
+            const users = snapshot.val() || {};
+            let totalLikes = 0;
+
+            for (const userId in users) {
+                const categorias = users[userId].categorias || {};
+                if (categorias[gameId] && categorias[gameId].status === 'zerado') {
+                    totalLikes += categorias[gameId].likes || 0;
+                }
+            }
+
+            resolve(totalLikes);
+        }).catch(error => {
+            console.error('Error fetching number of likes:', error);
+            resolve(0);
         });
     });
 }
