@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil do Usuário</title>
+    <title>Perfil do Amigo</title>
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-database.js"></script>
-    <script src="js/perfil.js" defer></script>
+    <script src="js/perfilamigo.js" defer></script>
 </head>
 <body>
     <header class="bg-dark text-white text-center py-3">
-        <h1>Perfil</h1>
+        <h1>Perfil do Amigo</h1>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
                 <a class="navbar-brand" href="index.html">Home</a>
@@ -32,28 +32,35 @@
         </nav>
     </header>
     <main>
+        <section id="perfil">
+            <h2>Informações do Amigo</h2>
+            <div id="perfil-info">
+                <!-- Informações do amigo serão carregadas aqui -->
+            </div>
+            <button id="add-friend-btn" class="btn btn-primary">Adicionar aos Amigos</button>
+        </section>
         <section id="amigos">
             <h2>Amigos</h2>
             <div id="amigos-lista">
                 <!-- Lista de amigos será carregada aqui -->
             </div>
-        </section>        
-        <section id="desejados">
-            <h2>Desejados</h2>
-            <div id="desejados-lista">
+        </section>
+        <section id="jogos-desejados">
+            <h2>Jogos Desejados</h2>
+            <div id="jogos-desejados-lista">
                 <!-- Lista de jogos desejados será carregada aqui -->
             </div>
         </section>
-        <section id="jogando">
-            <h2>Jogando</h2>
-            <div id="jogando-lista">
-                <!-- Lista de jogos em andamento será carregada aqui -->
+        <section id="jogos-jogando">
+            <h2>Jogos Jogando</h2>
+            <div id="jogos-jogando-lista">
+                <!-- Lista de jogos jogando será carregada aqui -->
             </div>
         </section>
-        <section id="zerado">
-            <h2>Zerado</h2>
-            <div id="zerado-lista">
-                <!-- Lista de jogos zerados e notas será carregada aqui -->
+        <section id="jogos-zerados">
+            <h2>Jogos Zerados</h2>
+            <div id="jogos-zerados-lista">
+                <!-- Lista de jogos zerados será carregada aqui -->
             </div>
         </section>
     </main>
