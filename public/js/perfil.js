@@ -28,20 +28,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Load user profile data including friends
+// Load user profile data
 function loadUserProfile(userId) {
-    const userRef = database.ref(`usuarios/${userId}`);
+    const userRef = database.ref(`usuarios/${userId}/categorias`);
 
     userRef.once('value').then(snapshot => {
-        const userData = snapshot.val() || {};
-        const categorias = userData.categorias || {};
-
+        const categorias = snapshot.val() || {};
         renderCategoryList(categorias, 'desejado', 'desejados-lista');
         renderCategoryList(categorias, 'jogando', 'jogando-lista');
         renderCompletedList(categorias, 'zerado', 'zerado-lista');
-
-        // Load friends list
-        renderFriendsList(userId, 'amigos-lista');
     }).catch(error => {
         console.error('Error loading user profile:', error);
     });
@@ -53,7 +48,7 @@ function renderCategoryList(categorias, category, containerId) {
     container.innerHTML = '';
 
     for (const gameId in categorias) {
-        if (categorias[gameId].status === category) {
+        if (categorias[gameId].status === category) { // Changed condition to check status
             createGameElement(gameId, container);
         }
     }
@@ -192,79 +187,11 @@ function fetchNumberOfLikes(gameId) {
     });
 }
 
-// Render list of friends
-function renderFriendsList(userId, containerId) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = '';
-
-    const userRef = database.ref(`usuarios/${userId}/amigos`);
-    userRef.once('value').then(snapshot => {
-        const amigos = snapshot.val() || [];
-        if (amigos.length > 0) {
-            amigos.forEach(friendId => {
-                const friendRef = database.ref(`usuarios/${friendId}`);
-                friendRef.once('value').then(friendSnapshot => {
-                    const friendData = friendSnapshot.val();
-                    if (friendData) {
-                        const friendDiv = document.createElement('div');
-                        friendDiv.classList.add('friend-item');
-
-                        // Create a link to the friend's profile
-                        const friendLink = document.createElement('a');
-                        friendLink.href = `perfilamigo.html?userId=${friendId}`;
-                        friendLink.classList.add('friend-link');
-
-                        // Create friend name
-                        const friendName = document.createElement('h4');
-                        friendName.textContent = friendData.username || 'Desconhecido';
-                        friendLink.appendChild(friendName);
-
-                        friendDiv.appendChild(friendLink);
-
-                        // Add 'Unfollow' button
-                        const unfollowButton = document.createElement('button');
-                        unfollowButton.textContent = 'Deixar de Seguir';
-                        unfollowButton.onclick = () => unfollowUser(userId, friendId);
-                        friendDiv.appendChild(unfollowButton);
-
-                        container.appendChild(friendDiv);
-                    }
-                }).catch(error => {
-                    console.error('Error loading friend data:', error);
-                });
-            });
-        } else {
-            container.innerHTML = '<p>Você não tem amigos para exibir.</p>';
-        }
-    }).catch(error => {
-        console.error('Error loading friends list:', error);
-    });
-}
-
-// Unfollow a user
-function unfollowUser(userId, friendId) {
-    const userRef = database.ref(`usuarios/${userId}/amigos`);
-    userRef.once('value').then(snapshot => {
-        const amigos = snapshot.val() || [];
-        const updatedFriends = amigos.filter(id => id !== friendId);
-
-        // Update the user's friends list
-        userRef.set(updatedFriends).then(() => {
-            alert('Você deixou de seguir este usuário.');
-            loadUserProfile(userId); // Reload profile to reflect changes
-        }).catch(error => {
-            console.error('Error unfollowing user:', error);
-        });
-    }).catch(error => {
-        console.error('Error loading user friends:', error);
-    });
-}
-
 // Logout function
 function logout() {
     firebase.auth().signOut().then(() => {
-        window.location.href = 'index.html'; // Redirect to home after logout
-    }).catch(error => {
-        console.error('Error signing out:', error);
+        window.location.href = 'index.html';
+    }).catch((error) => {
+        console.error('Error signing out: ', error);
     });
 }

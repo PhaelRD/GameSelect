@@ -13,24 +13,26 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const database = firebase.database();
+const auth = firebase.auth();
 
 // Função para verificar se o usuário está logado
 function checkAuthState() {
-    firebase.auth().onAuthStateChanged(user => {
+    auth.onAuthStateChanged(user => {
         if (user) {
+            // Usuário está logado
             document.getElementById('logout-menu-item').style.display = 'block';
-            fetchReviews(); // Buscar resenhas após verificar o estado de autenticação
         } else {
+            // Usuário não está logado
             document.getElementById('logout-menu-item').style.display = 'none';
-            window.location.href = 'login.html'; // Redirecionar para login
         }
     });
 }
 
 // Função para realizar o logout
 function logout() {
-    firebase.auth().signOut().then(() => {
-        window.location.href = 'login.html'; // Redirecionar para a página de login após logout
+    auth.signOut().then(() => {
+        // Redirecionar para a página de login após logout
+        window.location.href = 'login.html';
     }).catch(error => {
         console.error('Erro ao fazer logout:', error);
     });
@@ -45,37 +47,21 @@ function fetchGameDetails(gameId) {
 
 // Função para buscar e exibir as 50 últimas resenhas
 function fetchReviews() {
-    const user = firebase.auth().currentUser;
-
-    if (!user) {
-        console.error('Usuário não autenticado');
-        window.location.href = 'login.html'; // Redirecionar para a página de login se não estiver autenticado
-        return;
-    }
-
-    const currentUserId = user.uid;
     const reviewsRef = database.ref('usuarios');
     let reviewsArray = [];
     let topReviewsArray = [];
-    let friendsReviewsArray = [];
-    let promises = [];
-    let friendsIds = [];
-
-    // Primeiro, obter os IDs dos amigos do usuário atual
-    const currentUserRef = database.ref('usuarios/' + currentUserId);
-    promises.push(currentUserRef.once('value').then(userSnapshot => {
-        const userData = userSnapshot.val();
-        friendsIds = userData.amigos || [];
-    }));
 
     reviewsRef.once('value').then(snapshot => {
+        let promises = [];
+
         snapshot.forEach(userSnapshot => {
             const userId = userSnapshot.key;
             const userData = userSnapshot.val();
-            const username = userData.username || 'Usuário Desconhecido';
+            const username = userData.username || 'Usuário Desconhecido'; // Nome do usuário ou um valor padrão
+            const userCategories = userData.categorias || {};
 
-            Object.keys(userData.categorias || {}).forEach(gameId => {
-                const game = userData.categorias[gameId];
+            Object.keys(userCategories).forEach(gameId => {
+                const game = userCategories[gameId];
                 if (game.status === 'zerado') {
                     promises.push(
                         fetchGameDetails(gameId).then(gameDetails => {
@@ -83,81 +69,67 @@ function fetchReviews() {
                                 userId,
                                 username,
                                 gameId,
-                                gameName: gameDetails.nome,
-                                gameImage: gameDetails.imagem,
+                                gameName: gameDetails.nome, // Adiciona o nome do jogo
+                                gameImage: gameDetails.imagem, // Adiciona a imagem do jogo
                                 ...game
                             };
                             reviewsArray.push(review);
-                            topReviewsArray.push(review);
-
-                            if (friendsIds.includes(userId)) {
-                                friendsReviewsArray.push(review);
-                            }
+                            topReviewsArray.push(review); // Adiciona ao array para as mais curtidas
                         })
                     );
                 }
             });
         });
 
+        // Aguarda todas as promessas de detalhes do jogo serem resolvidas
         Promise.all(promises).then(() => {
-            topReviewsArray.sort((a, b) => (b.likes || 0) - (a.likes || 0)).slice(0, 5);
-            reviewsArray.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 50);
-            friendsReviewsArray.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 50);
+            // Ordena por número de likes em ordem decrescente e limita a 5
+            topReviewsArray.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+            topReviewsArray = topReviewsArray.slice(0, 5);
+
+            // Ordena por timestamp e limita a 50
+            reviewsArray.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            reviewsArray = reviewsArray.slice(0, 50);
 
             renderTopReviews(topReviewsArray);
             renderReviews(reviewsArray);
-            renderFriendsReviews(friendsReviewsArray);
-        }).catch(error => {
-            console.error('Erro ao buscar resenhas:', error);
-            showModal('Erro', 'Erro ao carregar resenhas. Tente novamente.');
         });
     }).catch(error => {
-        console.error('Erro ao buscar dados dos usuários:', error);
-        showModal('Erro', 'Erro ao carregar dados dos usuários. Tente novamente.');
+        console.error('Erro ao buscar resenhas:', error);
+        showModal('Erro', 'Erro ao carregar resenhas. Tente novamente.');
     });
 }
 
 // Função para renderizar as 5 resenhas mais curtidas
 function renderTopReviews(reviews) {
     const sidebarDiv = document.getElementById('top-reviews');
-    if (!sidebarDiv) {
-        console.error('Elemento com ID "top-reviews" não encontrado.');
-        return;
-    }
     sidebarDiv.innerHTML = ''; // Limpa o conteúdo anterior
 
     reviews.forEach(review => {
         const reviewCard = document.createElement('div');
         reviewCard.classList.add('mb-3');
-
+        
         reviewCard.innerHTML = `
             <div class="card shadow-sm">
                 <img src="${review.gameImage}" class="card-img-top" alt="${review.gameName}">
                 <div class="card-body">
                     <h5 class="card-title">${review.gameName}</h5>
-                    <p class="card-text">
-                        <strong>Usuário:</strong> 
-                        <a href="perfilamigo.html?userId=${review.userId}">${review.username}</a>
-                    </p>
+                    <p class="card-text"><strong>Usuário:</strong> ${review.username}</p>
                     <p class="card-text"><strong>Nota:</strong> ${review.nota}/10</p>
                     <p class="card-text"><strong>Resenha:</strong> ${review.resenha}</p>
                     <p class="card-text"><strong>Likes:</strong> ${review.likes || 0}</p>
-                    <button class="btn btn-primary like-btn" data-user-id="${review.userId}" data-game-id="${review.gameId}">
+                    <button class="btn btn-primary" id="like-btn-${review.userId}-${review.gameId}">
                         Curtir
                     </button>
                 </div>
             </div>
         `;
-
+        
         sidebarDiv.appendChild(reviewCard);
-    });
 
-    // Adiciona o evento de clique para todos os botões de curtir no feed
-    document.querySelectorAll('.like-btn').forEach(button => {
-        button.addEventListener('click', (event) => {
-            const userId = event.target.getAttribute('data-user-id');
-            const gameId = event.target.getAttribute('data-game-id');
-            likeReview(userId, gameId);
+        // Adiciona o evento de clique para o botão de curtir
+        document.getElementById(`like-btn-${review.userId}-${review.gameId}`).addEventListener('click', () => {
+            likeReview(review.userId, review.gameId);
         });
     });
 }
@@ -165,123 +137,70 @@ function renderTopReviews(reviews) {
 // Função para renderizar as resenhas no feed principal
 function renderReviews(reviews) {
     const feedDiv = document.getElementById('feed-resenhas');
-    if (!feedDiv) {
-        console.error('Elemento com ID "feed-resenhas" não encontrado.');
-        return;
-    }
     feedDiv.innerHTML = ''; // Limpa o conteúdo anterior
 
     reviews.forEach(review => {
         const reviewCard = document.createElement('div');
         reviewCard.classList.add('col-md-6', 'mb-4');
-
+        
         reviewCard.innerHTML = `
             <div class="card shadow-sm">
                 <img src="${review.gameImage}" class="card-img-top" alt="${review.gameName}">
                 <div class="card-body">
-                    <h5 class="card-title">
-                        <a href="perfilamigo.html?userId=${review.userId}">${review.username}</a>
-                    </h5>
-                    <p class="card-text"><strong>Jogo:</strong> ${review.gameName}</p>
+                    <h5 class="card-title">${review.username}</h5> <!-- Exibe o nome do usuário -->
+                    <p class="card-text"><strong>Jogo:</strong> ${review.gameName}</p> <!-- Exibe o nome do jogo -->
                     <p class="card-text"><strong>Nota:</strong> ${review.nota}/10</p>
                     <p class="card-text"><strong>Resenha:</strong> ${review.resenha}</p>
-                    <button class="btn btn-primary like-btn" data-user-id="${review.userId}" data-game-id="${review.gameId}">
+                    <button class="btn btn-primary" id="like-btn-${review.userId}-${review.gameId}">
                         Curtir (${review.likes || 0})
                     </button>
                 </div>
             </div>
         `;
-
+        
         feedDiv.appendChild(reviewCard);
-    });
 
-    // Adiciona o evento de clique para todos os botões de curtir no feed
-    document.querySelectorAll('.like-btn').forEach(button => {
-        button.addEventListener('click', (event) => {
-            const userId = event.target.getAttribute('data-user-id');
-            const gameId = event.target.getAttribute('data-game-id');
-            likeReview(userId, gameId);
-        });
-    });
-}
-
-// Função para renderizar as resenhas de amigos
-function renderFriendsReviews(reviews) {
-    const friendsFeedDiv = document.getElementById('friends-reviews');
-    if (!friendsFeedDiv) {
-        console.error('Elemento com ID "friends-reviews" não encontrado.');
-        return;
-    }
-    friendsFeedDiv.innerHTML = ''; // Limpa o conteúdo anterior
-
-    reviews.forEach(review => {
-        const reviewCard = document.createElement('div');
-        reviewCard.classList.add('col-md-6', 'mb-4');
-
-        reviewCard.innerHTML = `
-            <div class="card shadow-sm">
-                <img src="${review.gameImage}" class="card-img-top" alt="${review.gameName}">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <a href="perfilamigo.html?userId=${review.userId}">${review.username}</a>
-                    </h5>
-                    <p class="card-text"><strong>Jogo:</strong> ${review.gameName}</p>
-                    <p class="card-text"><strong>Nota:</strong> ${review.nota}/10</p>
-                    <p class="card-text"><strong>Resenha:</strong> ${review.resenha}</p>
-                    <button class="btn btn-primary like-btn" data-user-id="${review.userId}" data-game-id="${review.gameId}">
-                        Curtir (${review.likes || 0})
-                    </button>
-                </div>
-            </div>
-        `;
-
-        friendsFeedDiv.appendChild(reviewCard);
-    });
-
-    // Adiciona o evento de clique para todos os botões de curtir no feed de amigos
-    document.querySelectorAll('.like-btn').forEach(button => {
-        button.addEventListener('click', (event) => {
-            const userId = event.target.getAttribute('data-user-id');
-            const gameId = event.target.getAttribute('data-game-id');
-            likeReview(userId, gameId);
+        // Adiciona o evento de clique para o botão de curtir
+        document.getElementById(`like-btn-${review.userId}-${review.gameId}`).addEventListener('click', () => {
+            likeReview(review.userId, review.gameId);
         });
     });
 }
 
 // Função para curtir uma resenha
 function likeReview(userId, gameId) {
-    const reviewRef = database.ref('usuarios/' + userId + '/categorias/' + gameId);
-    reviewRef.once('value').then(snapshot => {
-        const review = snapshot.val();
-        if (review) {
-            const currentLikes = review.likes || 0;
-            reviewRef.update({ likes: currentLikes + 1 }).then(() => {
-                // Atualiza a interface após curtir
-                fetchReviews();
-            }).catch(error => {
-                console.error('Erro ao curtir resenha:', error);
-            });
+    const userGameRef = database.ref(`usuarios/${userId}/categorias/${gameId}`);
+
+    userGameRef.transaction(game => {
+        if (game) {
+            if (game.likes) {
+                game.likes++;
+            } else {
+                game.likes = 1;
+            }
         }
+        return game;
+    }).then(() => {
+        fetchReviews(); // Atualiza a lista após dar like
     }).catch(error => {
-        console.error('Erro ao buscar resenha:', error);
+        console.error('Erro ao curtir resenha:', error);
+        showModal('Erro', 'Erro ao curtir resenha. Tente novamente.');
     });
 }
 
-// Função para exibir um modal de erro
+// Mostrar modal com mensagem
 function showModal(title, message) {
-    const modalTitle = document.getElementById('modal-title');
-    const modalBody = document.getElementById('modal-body');
+    const modalTitle = document.getElementById('alertModalLabel');
+    const modalBody = document.querySelector('#alertModal .modal-body');
+
     modalTitle.textContent = title;
     modalBody.textContent = message;
-    $('#errorModal').modal('show');
+
+    $('#alertModal').modal('show');
 }
 
-// Inicializa a aplicação
+// Carregar resenhas e verificar estado de autenticação ao carregar a página
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthState();
-});
-
-// Evento de clique para o botão de logout
-document.getElementById('logout-menu-item').addEventListener('click', () => {
-    logout();
+    fetchReviews();
 });
