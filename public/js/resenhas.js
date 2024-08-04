@@ -15,6 +15,29 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 const auth = firebase.auth();
 
+// Função para verificar se o usuário está logado
+function checkAuthState() {
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            // Usuário está logado
+            document.getElementById('logout-menu-item').style.display = 'block';
+        } else {
+            // Usuário não está logado
+            document.getElementById('logout-menu-item').style.display = 'none';
+        }
+    });
+}
+
+// Função para realizar o logout
+function logout() {
+    auth.signOut().then(() => {
+        // Redirecionar para a página de login após logout
+        window.location.href = 'login.html';
+    }).catch(error => {
+        console.error('Erro ao fazer logout:', error);
+    });
+}
+
 // Função para buscar detalhes dos jogos
 function fetchGameDetails(gameId) {
     return database.ref('jogos/' + gameId).once('value').then(snapshot => {
@@ -176,5 +199,8 @@ function showModal(title, message) {
     $('#alertModal').modal('show');
 }
 
-// Carregar resenhas ao carregar a página
-document.addEventListener('DOMContentLoaded', fetchReviews);
+// Carregar resenhas e verificar estado de autenticação ao carregar a página
+document.addEventListener('DOMContentLoaded', () => {
+    checkAuthState();
+    fetchReviews();
+});
