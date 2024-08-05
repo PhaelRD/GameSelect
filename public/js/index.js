@@ -17,6 +17,10 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
 
+// Variáveis globais para os filtros
+let selectedPlatforms = [];
+let selectedGenres = [];
+
 document.addEventListener('DOMContentLoaded', function() {
     // Verifique a autenticação e ajuste a interface
     auth.onAuthStateChanged(function(user) {
@@ -59,13 +63,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const platformFilters = document.querySelectorAll('.filtro-plataforma');
     const genreFilters = document.querySelectorAll('.filtro-genero');
 
-    // Buscar jogos do Firebase
-    fetchGames();
+    // Função para atualizar os filtros selecionados
+    function updateFilters() {
+        selectedPlatforms = Array.from(platformFilters)
+            .filter(filter => filter.checked)
+            .map(filter => filter.value);
+
+        selectedGenres = Array.from(genreFilters)
+            .filter(filter => filter.checked)
+            .map(filter => filter.value);
+
+        filterGames();
+    }
 
     // Adicionar ouvintes de eventos para filtros
     searchInput.addEventListener('input', filterGames);
-    platformFilters.forEach(filter => filter.addEventListener('change', filterGames));
-    genreFilters.forEach(filter => filter.addEventListener('change', filterGames));
+    platformFilters.forEach(filter => filter.addEventListener('change', updateFilters));
+    genreFilters.forEach(filter => filter.addEventListener('change', updateFilters));
+
+    // Buscar jogos do Firebase
+    fetchGames();
 });
 
 // Buscar jogos do banco de dados e renderizá-los
@@ -130,6 +147,8 @@ function renderGames(jogos) {
         const gameElement = document.createElement('div');
         gameElement.classList.add('col-lg-4', 'col-md-6', 'mb-4', 'game');
         gameElement.setAttribute('data-id', id); // Anexar ID do jogo como um atributo de dados
+        gameElement.setAttribute('data-plataforma', jogo.plataformas.join(',')); // Adicionar plataformas ao atributo de dados
+        gameElement.setAttribute('data-genero', jogo.generos.join(',')); // Adicionar gêneros ao atributo de dados
 
         const gameLink = document.createElement('a');
         gameLink.href = `jogo.html?id=${id}`; // Link para a página de detalhes do jogo com ID do jogo
@@ -170,22 +189,24 @@ function renderGames(jogos) {
 
 // Função para filtrar jogos com base no termo de pesquisa
 function filterGames() {
+    const searchInput = document.getElementById('pesquisa-nome');
     const searchTerm = searchInput.value.toLowerCase().trim();
-    const selectedPlatforms = Array.from(platformFilters).filter(el => el.checked).map(el => el.value);
-    const selectedGenres = Array.from(genreFilters).filter(el => el.checked).map(el => el.value);
+    const platformFilters = document.querySelectorAll('.filtro-plataforma');
+    const genreFilters = document.querySelectorAll('.filtro-genero');
 
-    // Ocultar ou mostrar jogos com base nos critérios de filtro
+    // Filtrar jogos
     document.querySelectorAll('.game').forEach(gameElement => {
         const gameName = gameElement.querySelector('.card-title').textContent.toLowerCase();
         const gamePlatforms = (gameElement.getAttribute('data-plataforma') || '').split(','); // Use data-plataforma para plataformas
         const gameGenres = (gameElement.getAttribute('data-genero') || '').split(','); // Use data-genero para gêneros
 
-        // Verifique se o jogo corresponde aos critérios de filtro
+        // Verifique se o nome do jogo corresponde ao termo de pesquisa
         const nameMatches = gameName.includes(searchTerm);
+
+        // Verifique se as plataformas e gêneros correspondem aos filtros selecionados
         const platformMatches = selectedPlatforms.length === 0 || selectedPlatforms.some(platform => gamePlatforms.includes(platform));
         const genreMatches = selectedGenres.length === 0 || selectedGenres.some(genre => gameGenres.includes(genre));
 
-        // Mostre ou oculte o jogo com base na correspondência
         if (nameMatches && platformMatches && genreMatches) {
             gameElement.style.display = 'block';
         } else {
@@ -194,25 +215,26 @@ function filterGames() {
     });
 }
 
-// Função de logout
+// Função para fazer logout
 function logout() {
     auth.signOut().then(() => {
-        // Redirecionar para a página de login ou mostrar uma mensagem
-        window.location.href = 'index.html';
+        console.log('Logout bem-sucedido!');
+        window.location.href = 'index.html'; // Redireciona para a página inicial após o logout
     }).catch((error) => {
-        console.error('Erro ao sair:', error);
+        console.error('Erro ao fazer logout:', error);
     });
 }
 
-// Função para criar um novo usuário
+// Criar um novo usuário
 function createNewUser(userId, email, username) {
-    database.ref('usuarios/' + userId).set({
+    database.ref(`usuarios/${userId}`).set({
         email: email,
         username: username,
-        admin: true // Definindo admin como booleano
+        admin: false,
+        categorias: {}
     }).then(() => {
-        console.log('Novo usuário criado com sucesso.');
-    }).catch(error => {
-        console.error('Erro ao criar novo usuário:', error);
+        console.log('Usuário criado com sucesso:', userId);
+    }).catch((error) => {
+        console.error('Erro ao criar usuário:', error);
     });
 }
