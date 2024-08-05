@@ -3,7 +3,7 @@
     "rules": "database.rules.json"
   },
   "hosting": {
-    "site": "emulando",
+    "site": "game-select",
     "public": "public",
     "ignore": [
       "firebase.json",

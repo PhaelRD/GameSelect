@@ -118,8 +118,6 @@ function renderGames(jogos) {
     const gameList = document.getElementById('jogos-lista');
     gameList.innerHTML = ''; // Limpar jogos anteriores
 
-    let counter = 0; // Contador para adicionar anúncios
-
     for (let id in jogos) {
         const jogo = jogos[id];
 
@@ -167,22 +165,6 @@ function renderGames(jogos) {
 
         // Anexar elemento de jogo à lista de jogos
         gameList.appendChild(gameElement);
-
-        // Incrementar contador
-        counter++;
-
-        // Inserir anúncio a cada 3 jogos
-        if (counter % 3 === 0) {
-            const adElement = document.createElement('div');
-            adElement.classList.add('col-lg-4', 'col-md-6', 'mb-4');
-
-            const adContent = document.createElement('div');
-            adContent.classList.add('card', 'shadow-sm', 'h-100', 'bg-warning', 'text-center', 'p-4');
-            adContent.textContent = 'Este é um espaço de anúncio!';
-
-            adElement.appendChild(adContent);
-            gameList.appendChild(adElement);
-        }
     }
 }
 

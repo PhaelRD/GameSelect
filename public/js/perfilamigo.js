@@ -147,25 +147,54 @@ function createGameElement(gameId, container, userRating = null, review = null) 
     });
 }
 
-// Fetch the average rating for a game
+// Fetch average rating for a specific game
 function fetchAverageRating(gameId) {
-    const ratingsRef = database.ref(`jogos/${gameId}/avaliacoes`);
-    return ratingsRef.once('value').then(snapshot => {
-        const ratings = snapshot.val() || [];
-        if (ratings.length > 0) {
-            const sum = ratings.reduce((acc, rating) => acc + rating, 0);
-            return (sum / ratings.length).toFixed(1);
-        }
-        return 'N/A';
+    return new Promise((resolve, reject) => {
+        database.ref('usuarios').once('value').then(snapshot => {
+            const users = snapshot.val() || {};
+            let sum = 0;
+            let count = 0;
+
+            for (const userId in users) {
+                const categorias = users[userId].categorias || {};
+                if (categorias[gameId] && categorias[gameId].status === 'zerado') {
+                    sum += categorias[gameId].nota;
+                    count += 1;
+                }
+            }
+
+            if (count > 0) {
+                const average = (sum / count).toFixed(1);
+                resolve(`${average}/10`);
+            } else {
+                resolve('N/A');
+            }
+        }).catch(error => {
+            console.error('Error fetching average rating:', error);
+            resolve('N/A');
+        });
     });
 }
 
 // Fetch the number of likes for a game
 function fetchNumberOfLikes(gameId) {
-    const likesRef = database.ref(`jogos/${gameId}/curtidas`);
-    return likesRef.once('value').then(snapshot => {
-        const likes = snapshot.val() || 0;
-        return likes;
+    return new Promise((resolve, reject) => {
+        database.ref('usuarios').once('value').then(snapshot => {
+            const users = snapshot.val() || {};
+            let totalLikes = 0;
+
+            for (const userId in users) {
+                const categorias = users[userId].categorias || {};
+                if (categorias[gameId] && categorias[gameId].status === 'zerado') {
+                    totalLikes += categorias[gameId].likes || 0;
+                }
+            }
+
+            resolve(totalLikes);
+        }).catch(error => {
+            console.error('Error fetching number of likes:', error);
+            resolve(0);
+        });
     });
 }
 
