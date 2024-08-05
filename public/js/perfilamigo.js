@@ -50,9 +50,9 @@ function loadUserProfile(userId) {
                 <h3>Nome: ${userData.username || 'Desconhecido'}</h3>
             `;
             renderFriendsList(userId, 'amigos-lista');
-            renderGameList(userId, 'desejados', 'jogos-desejados-lista');
-            renderGameList(userId, 'jogando', 'jogos-jogando-lista');
-            renderGameList(userId, 'zerado', 'jogos-zerados-lista');
+            renderGameList(userId, 'desejado', 'jogos-desejados-lista', false);
+            renderGameList(userId, 'jogando', 'jogos-jogando-lista', false);
+            renderGameList(userId, 'zerado', 'jogos-zerados-lista', true);
         }
     }).catch(error => {
         console.error('Erro ao carregar perfil do amigo:', error);
@@ -60,7 +60,7 @@ function loadUserProfile(userId) {
 }
 
 // Render game list for a specific category
-function renderGameList(userId, category, containerId) {
+function renderGameList(userId, category, containerId, showRatings) {
     const container = document.getElementById(containerId);
     container.innerHTML = '';
 
@@ -74,7 +74,8 @@ function renderGameList(userId, category, containerId) {
                     gameId,
                     container,
                     categorias[gameId].nota,
-                    categorias[gameId].resenha
+                    categorias[gameId].resenha,
+                    showRatings
                 );
             }
         }
@@ -84,7 +85,7 @@ function renderGameList(userId, category, containerId) {
 }
 
 // Create an HTML element for a game
-function createGameElement(gameId, container, userRating = null, review = null) {
+function createGameElement(gameId, container, userRating = null, review = null, showRatings) {
     const gameRef = database.ref(`jogos/${gameId}`);
 
     gameRef.once('value').then(snapshot => {
@@ -112,33 +113,35 @@ function createGameElement(gameId, container, userRating = null, review = null) 
             // Append the link to the gameDiv
             gameDiv.appendChild(gameLink);
 
-            // Add user's rating if available
-            if (userRating !== null) {
+            // Add user's rating if available and if showRatings is true
+            if (showRatings && userRating !== null) {
                 const userRatingElement = document.createElement('p');
                 userRatingElement.textContent = `Sua Nota: ${userRating}/10`;
                 gameDiv.appendChild(userRatingElement);
             }
 
             // Add review if available
-            if (review !== null) {
+            if (showRatings && review !== null) {
                 const reviewElement = document.createElement('p');
                 reviewElement.textContent = `Resenha: ${review}`;
                 gameDiv.appendChild(reviewElement);
             }
 
-            // Fetch and display the average rating
-            fetchAverageRating(gameId).then(averageRating => {
-                const averageRatingElement = document.createElement('p');
-                averageRatingElement.textContent = `Nota Média: ${averageRating}`;
-                gameDiv.appendChild(averageRatingElement);
-            });
+            if (showRatings) {
+                // Fetch and display the average rating
+                fetchAverageRating(gameId).then(averageRating => {
+                    const averageRatingElement = document.createElement('p');
+                    averageRatingElement.textContent = `Nota Média: ${averageRating}`;
+                    gameDiv.appendChild(averageRatingElement);
+                });
 
-            // Fetch and display the number of likes
-            fetchNumberOfLikes(gameId).then(numberOfLikes => {
-                const likesElement = document.createElement('p');
-                likesElement.textContent = `Curtidas: ${numberOfLikes}`;
-                gameDiv.appendChild(likesElement);
-            });
+                // Fetch and display the number of likes
+                fetchNumberOfLikes(gameId).then(numberOfLikes => {
+                    const likesElement = document.createElement('p');
+                    likesElement.textContent = `Curtidas: ${numberOfLikes}`;
+                    gameDiv.appendChild(likesElement);
+                });
+            }
 
             container.appendChild(gameDiv);
         }
@@ -170,7 +173,7 @@ function fetchAverageRating(gameId) {
                 resolve('N/A');
             }
         }).catch(error => {
-            console.error('Error fetching average rating:', error);
+            console.error('Erro ao buscar nota média:', error);
             resolve('N/A');
         });
     });
@@ -192,7 +195,7 @@ function fetchNumberOfLikes(gameId) {
 
             resolve(totalLikes);
         }).catch(error => {
-            console.error('Error fetching number of likes:', error);
+            console.error('Erro ao buscar número de curtidas:', error);
             resolve(0);
         });
     });
@@ -249,11 +252,12 @@ function renderFriendsList(userId, containerId) {
                         friendLink.href = `perfilamigo.html?userId=${friendId}`;
                         friendLink.classList.add('friend-link');
 
-                        // Create friend name
+                        // Create friend's name
                         const friendName = document.createElement('h4');
                         friendName.textContent = friendData.username || 'Desconhecido';
                         friendLink.appendChild(friendName);
 
+                        // Append the link to the friendDiv
                         friendDiv.appendChild(friendLink);
                         container.appendChild(friendDiv);
                     }
@@ -262,9 +266,9 @@ function renderFriendsList(userId, containerId) {
                 });
             });
         } else {
-            container.innerHTML = '<p>Não há amigos para exibir.</p>';
+            container.innerHTML = 'Nenhum amigo encontrado.';
         }
     }).catch(error => {
-        console.error('Erro ao carregar lista de amigos:', error);
+        console.error('Erro ao renderizar lista de amigos:', error);
     });
 }
