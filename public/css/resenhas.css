@@ -1,0 +1,202 @@
+    /* Estilos Gerais */
+    body {
+        background-color: #f8f9fa; /* Fundo cinza claro */
+        font-family: 'Roboto', sans-serif; /* Fonte geral */
+    }
+
+    header {
+        background-color: #343a40; /* Fundo cinza escuro */
+        color: #ffc107; /* Cor do texto amarelo */
+        margin-bottom: 20px; /* Espaçamento inferior */
+        padding: 15px 0; /* Espaçamento interno */
+    }
+
+    h1 {
+        margin: 0; /* Remover margens padrão */
+        font-size: 2rem; /* Tamanho do título */
+    }
+
+    .navbar-brand {
+        color: #ffc107 !important; /* Marca amarela na navegação */
+    }
+
+    .navbar-nav .nav-item .nav-link {
+        color: #fff; /* Cor dos links */
+        transition: color 0.3s ease; /* Transição suave */
+    }
+
+    .navbar-nav .nav-item .nav-link:hover {
+        color: #ffc107; /* Cor amarela ao passar o mouse */
+    }
+
+    /* Estilos do Card de Detalhes do Jogo */
+    .card {
+        border: 1px solid #ffc107; /* Borda amarela */
+        border-radius: 10px; /* Bordas arredondadas */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra */
+        overflow: hidden; /* Cortar o conteúdo excedente */
+    }
+
+    .card-header {
+        background-color: #ffc107; /* Fundo amarelo */
+        color: #343a40; /* Texto em cinza escuro */
+        font-size: 1.5rem; /* Tamanho do texto */
+        padding: 10px 15px; /* Espaçamento interno */
+    }
+
+    .card-body {
+        padding: 20px; /* Espaçamento interno */
+    }
+
+    .card-img-top {       
+        width: 100%; /* Largura total */
+        height: auto; /* Altura automática */
+        max-height: 100%; /* Altura máxima */
+        object-fit: cover; /* Ajustar imagem */
+    }
+
+    .card-text {
+        font-size: 1rem; /* Tamanho do texto */
+        color: #6c757d; /* Cor cinza */
+        line-height: 1.6; /* Altura da linha */
+    }
+
+    h3 {
+        font-size: 1.25rem; /* Tamanho do texto */
+        color: #343a40; /* Texto em cinza escuro */
+        margin-top: 15px; /* Espaçamento superior */
+        margin-bottom: 10px; /* Espaçamento inferior */
+    }
+
+    .list-group-item {
+        border: none; /* Sem borda */
+        padding-left: 0; /* Sem padding esquerdo */
+        padding-right: 0; /* Sem padding direito */
+        background-color: transparent; /* Fundo transparente */
+    }
+
+    .list-group-item a {
+        color: #007bff; /* Cor dos links */
+        text-decoration: none; /* Remover sublinhado */
+    }
+
+    .list-group-item a:hover {
+        color: #0056b3; /* Cor ao passar o mouse */
+        text-decoration: underline; /* Adicionar sublinhado */
+    }
+
+    /* Botões */
+    .btn-outline-primary,
+    .btn-outline-success,
+    .btn-outline-warning {
+        margin: 5px; /* Espaçamento entre botões */
+        border-width: 2px; /* Largura da borda */
+    }
+
+    .btn-outline-primary:hover,
+    .btn-outline-success:hover,
+    .btn-outline-warning:hover {
+        color: #fff; /* Cor do texto */
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #007bff; /* Fundo azul */
+    }
+
+    .btn-outline-success:hover {
+        background-color: #28a745; /* Fundo verde */
+    }
+
+    .btn-outline-warning:hover {
+        background-color: #ffc107; /* Fundo amarelo */
+        color: #212529; /* Texto em preto */
+    }
+
+    /* Input de Nota */
+    #nota-zerado .form-control {
+        width: 100px; /* Largura do input */
+        margin: 10px auto; /* Centralizar */
+    }
+
+    /* Estilos do Textarea de Resenha */
+    #nota-zerado #resenha {
+        width: calc(100% - 20px); /* Largura da caixa de resenha */
+        margin: 10px auto; /* Centralizar */
+        min-height: 100px; /* Altura mínima */
+    }
+
+    /* Estilos do Modal */
+    .modal-content {
+        border-radius: 10px; /* Bordas arredondadas */
+    }
+
+    .modal-header {
+        background-color: #343a40; /* Fundo cinza escuro */
+        color: #ffc107; /* Texto em amarelo */
+        border-bottom: none; /* Sem borda inferior */
+    }
+
+    .modal-body {
+        color: #343a40; /* Texto em cinza escuro */
+        font-size: 1rem; /* Tamanho do texto */
+    }
+
+    .modal-footer {
+        border-top: none; /* Sem borda superior */
+    }
+
+    .btn-secondary {
+        background-color: #343a40; /* Fundo cinza escuro */
+        color: #ffc107; /* Texto em amarelo */
+    }
+
+    .btn-secondary:hover {
+        background-color: #212529; /* Fundo cinza mais escuro */
+        color: #ffc107; /* Texto em amarelo */
+    }
+
+    /* Layout dos Feeds */
+    #feed-resenhas {
+        background-color: #ffffff; /* Fundo branco */
+        border-radius: 10px; /* Bordas arredondadas */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra */
+    }
+
+    #friends-reviews,
+    #top-reviews {
+        background-color: #ffffff; /* Fundo branco */
+        border-radius: 10px; /* Bordas arredondadas */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra */
+        margin-bottom: 20px; /* Espaçamento inferior */
+    }
+
+    /* Responsividade */
+    @media (max-width: 767px) {
+        header h1 {
+            font-size: 1.5rem; /* Tamanho do título menor */
+        }
+
+        .card-body {
+            padding: 15px; /* Menor espaçamento interno */
+        }
+
+        .btn-outline-primary,
+        .btn-outline-success,
+        .btn-outline-warning {
+            margin: 3px; /* Menor espaçamento entre botões */
+        }
+
+        #nota-zerado .form-control {
+            width: 80px; /* Menor largura do input */
+        }
+        
+        /* Ajuste do Textarea em dispositivos menores */
+        #nota-zerado #resenha {
+            width: calc(100% - 20px); /* Ajustar largura */
+        }
+
+        .row > div {
+            width: 100%; /* Colunas ocupam 100% da largura em dispositivos menores */
+            margin-bottom: 20px; /* Espaçamento inferior */
+        }
+    }

@@ -134,16 +134,14 @@ function renderTopReviews(reviews) {
             <div class="card shadow-sm">
                 <img src="${review.gameImage}" class="card-img-top" alt="${review.gameName}">
                 <div class="card-body">
-                    <h5 class="card-title">${review.gameName}</h5>
-                    <p class="card-text">
-                        <strong>Usuário:</strong> 
+                    <h5 class="card-title">
                         <a href="perfilamigo.html?userId=${review.userId}">${review.username}</a>
-                    </p>
+                    </h5>
+                    <p class="card-text"><strong>Jogo:</strong> ${review.gameName}</p>
                     <p class="card-text"><strong>Nota:</strong> ${review.nota}/10</p>
                     <p class="card-text"><strong>Resenha:</strong> ${review.resenha}</p>
-                    <p class="card-text"><strong>Likes:</strong> ${review.likes || 0}</p>
                     <button class="btn btn-primary like-btn" data-user-id="${review.userId}" data-game-id="${review.gameId}">
-                        Curtir
+                        Curtir (${review.likes || 0})
                     </button>
                 </div>
             </div>
@@ -173,7 +171,7 @@ function renderReviews(reviews) {
 
     reviews.forEach(review => {
         const reviewCard = document.createElement('div');
-        reviewCard.classList.add('col-md-6', 'mb-4');
+        reviewCard.classList.add('mb-3');
 
         reviewCard.innerHTML = `
             <div class="card shadow-sm">
@@ -216,7 +214,7 @@ function renderFriendsReviews(reviews) {
 
     reviews.forEach(review => {
         const reviewCard = document.createElement('div');
-        reviewCard.classList.add('col-md-6', 'mb-4');
+        reviewCard.classList.add('mb-3');
 
         reviewCard.innerHTML = `
             <div class="card shadow-sm">
