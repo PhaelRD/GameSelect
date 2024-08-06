@@ -1,5 +1,6 @@
 body {
     background-color: #f8f9fa; /* Cor de fundo da página */
+    font-family: Arial, sans-serif; /* Fonte padrão */
 }
 
 header {
@@ -8,19 +9,21 @@ header {
 
 h1 {
     color: #ffc107; /* Cor amarela para o título */
+    font-size: 2rem; /* Ajuste o tamanho da fonte se necessário */
 }
 
 .navbar-nav .nav-item .nav-link {
     color: #fff; /* Cor dos links */
     transition: color 0.3s ease; /* Transição suave */
-
 }
+
 .navbar-brand {
     color: #ffc107 !important; /* Marca amarela na navegação */
 }
 
 .card {
     border: 1px solid #ffc107; /* Borda amarela */
+    border-radius: 0.5rem; /* Bordas arredondadas */
 }
 
 .card-title {
@@ -36,16 +39,18 @@ h1 {
     height: auto; /* Altura automática para manter proporção */
     max-height: 200px; /* Altura máxima para imagens */
     object-fit: cover; /* Ajustar imagem para cobrir todo o espaço disponível */
+    border-bottom: 1px solid #ddd; /* Borda sutil abaixo da imagem */
 }
 
 #jogos-lista .game-link {
     text-decoration: none; /* Remover sublinhado dos links */
     color: #212529; /* Cor padrão para texto dos links */
-    transition: transform 0.2s ease; /* Suave efeito de transformação */
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Transições suaves */
 }
 
 #jogos-lista .game-link:hover {
     transform: scale(1.05); /* Ampliar levemente o card ao passar o mouse */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adicionar sombra ao hover */
 }
 
 #jogos-lista .game h3 {
@@ -59,31 +64,17 @@ h1 {
     color: #6c757d; /* Cor cinza para a nota média */
 }
 
-.ad-card {
-    border: 1px solid #343a40; /* Borda do anúncio */
-}
-
-.ad-card .card-title {
-    font-weight: bold;
-    color: #343a40; /* Cor do título do anúncio */
-}
-
-.ad-card .card-text {
-    color: #212529; /* Cor do texto do anúncio */
-}
-
-.ad-card .btn-dark {
-    background-color: #343a40;
-    color: #ffc107;
-    border-color: #343a40;
-}
-
-.ad-card .btn-dark:hover {
-    background-color: #212529;
-    color: #ffc107;
-}
-
 .carousel-item img {
     height: 300px; /* Ajuste conforme necessário */
     object-fit: cover; /* Garante que a imagem preencha o espaço */
+}
+
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 10px; /* Reduzir o espaço entre os cards em telas menores */
+    }
+
+    #jogos-lista .game img {
+        max-height: 150px; /* Ajustar altura da imagem em telas menores */
+    }
 }
