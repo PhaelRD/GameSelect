@@ -78,3 +78,42 @@ h1 {
         max-height: 150px; /* Ajustar altura da imagem em telas menores */
     }
 }
+
+/* Estilo para o contêiner de paginação */
+#pagination-controls {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+/* Estilo para os botões de paginação */
+#pagination-controls button {
+    background-color: #007bff;
+    border: 1px solid #007bff;
+    color: white;
+    padding: 8px 16px;
+    margin: 0 5px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* Estilo para o botão de página atual */
+#pagination-controls button[disabled] {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    cursor: default;
+}
+
+/* Estilo para o botão de página ao passar o mouse */
+#pagination-controls button:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+/* Estilo para o botão de página ao ser clicado */
+#pagination-controls button:active {
+    background-color: #004494;
+    border-color: #004494;
+}
