@@ -21,6 +21,10 @@ const database = firebase.database();
 let selectedPlatforms = [];
 let selectedGenres = [];
 
+// Variáveis de paginação
+let currentPage = 1;
+const gamesPerPage = 15;
+
 document.addEventListener('DOMContentLoaded', function() {
     // Verifique a autenticação e ajuste a interface
     auth.onAuthStateChanged(function(user) {
@@ -133,25 +137,25 @@ function calculateAndRenderGamesWithRatings(jogos) {
 // Renderizar jogos com base nos dados do Firebase
 function renderGames(jogos) {
     const gameList = document.getElementById('jogos-lista');
-    gameList.innerHTML = ''; // Limpar jogos anteriores
+    gameList.innerHTML = '';
 
-    for (let id in jogos) {
-        const jogo = jogos[id];
+    // Calcular o índice inicial e final com base na página atual
+    const startIndex = (currentPage - 1) * gamesPerPage;
+    const endIndex = startIndex + gamesPerPage;
 
-        // Verifique se o objeto de jogo está definido
-        if (!jogo) {
-            continue;
-        }
+    // Obter os jogos que devem ser exibidos na página atual
+    const jogosArray = Object.entries(jogos);
+    const jogosParaExibir = jogosArray.slice(startIndex, endIndex);
 
-        // Criar elementos HTML para o jogo
+    jogosParaExibir.forEach(([id, jogo]) => {
         const gameElement = document.createElement('div');
         gameElement.classList.add('col-lg-4', 'col-md-6', 'mb-4', 'game');
-        gameElement.setAttribute('data-id', id); // Anexar ID do jogo como um atributo de dados
-        gameElement.setAttribute('data-plataforma', jogo.plataformas.join(',')); // Adicionar plataformas ao atributo de dados
-        gameElement.setAttribute('data-genero', jogo.generos.join(',')); // Adicionar gêneros ao atributo de dados
+        gameElement.setAttribute('data-id', id);
+        gameElement.setAttribute('data-plataforma', jogo.plataformas.join(','));
+        gameElement.setAttribute('data-genero', jogo.generos.join(','));
 
         const gameLink = document.createElement('a');
-        gameLink.href = `jogo.html?id=${id}`; // Link para a página de detalhes do jogo com ID do jogo
+        gameLink.href = `jogo.html?id=${id}`;
         gameLink.classList.add('game-link', 'card', 'shadow-sm', 'h-100');
 
         const gameImage = document.createElement('img');
@@ -166,25 +170,60 @@ function renderGames(jogos) {
         gameName.classList.add('card-title', 'mt-2');
         gameName.textContent = jogo.nome;
 
-        // Criar e adicionar a classificação média
         const gameRating = document.createElement('p');
         gameRating.classList.add('card-text', 'mt-auto');
         gameRating.textContent = `Nota Média: ${jogo.averageRating || 'N/A'}`;
 
-        // Anexar elementos ao corpo do card
-        cardBody.appendChild(gameName); // Nome primeiro
-        cardBody.appendChild(gameRating); // Nota por último
+        cardBody.appendChild(gameName);
+        cardBody.appendChild(gameRating);
 
-        // Anexar imagem e corpo ao link do jogo
-        gameLink.appendChild(gameImage); // Imagem primeiro
-        gameLink.appendChild(cardBody); // Corpo depois
+        gameLink.appendChild(gameImage);
+        gameLink.appendChild(cardBody);
 
-        // Anexar link do jogo ao elemento de jogo
         gameElement.appendChild(gameLink);
-
-        // Anexar elemento de jogo à lista de jogos
         gameList.appendChild(gameElement);
+    });
+
+    updatePaginationControls(jogosArray.length);
+}
+
+function updatePaginationControls(totalGames) {
+    const totalPages = Math.ceil(totalGames / gamesPerPage);
+    const paginationControls = document.getElementById('pagination-controls');
+    paginationControls.innerHTML = '';
+
+    // Botão de página anterior
+    if (currentPage > 1) {
+        const prevButton = document.createElement('button');
+        prevButton.textContent = 'Anterior';
+        prevButton.onclick = () => changePage(currentPage - 1);
+        paginationControls.appendChild(prevButton);
     }
+
+    // Botões de página
+    for (let i = 1; i <= totalPages; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        if (i === currentPage) {
+            pageButton.disabled = true;
+        } else {
+            pageButton.onclick = () => changePage(i);
+        }
+        paginationControls.appendChild(pageButton);
+    }
+
+    // Botão de página seguinte
+    if (currentPage < totalPages) {
+        const nextButton = document.createElement('button');
+        nextButton.textContent = 'Próximo';
+        nextButton.onclick = () => changePage(currentPage + 1);
+        paginationControls.appendChild(nextButton);
+    }
+}
+
+function changePage(page) {
+    currentPage = page;
+    fetchGames();
 }
 
 // Função para filtrar jogos com base no termo de pesquisa
@@ -194,16 +233,12 @@ function filterGames() {
     const platformFilters = document.querySelectorAll('.filtro-plataforma');
     const genreFilters = document.querySelectorAll('.filtro-genero');
 
-    // Filtrar jogos
     document.querySelectorAll('.game').forEach(gameElement => {
         const gameName = gameElement.querySelector('.card-title').textContent.toLowerCase();
-        const gamePlatforms = (gameElement.getAttribute('data-plataforma') || '').split(','); // Use data-plataforma para plataformas
-        const gameGenres = (gameElement.getAttribute('data-genero') || '').split(','); // Use data-genero para gêneros
+        const gamePlatforms = (gameElement.getAttribute('data-plataforma') || '').split(',');
+        const gameGenres = (gameElement.getAttribute('data-genero') || '').split(',');
 
-        // Verifique se o nome do jogo corresponde ao termo de pesquisa
         const nameMatches = gameName.includes(searchTerm);
-
-        // Verifique se as plataformas e gêneros correspondem aos filtros selecionados
         const platformMatches = selectedPlatforms.length === 0 || selectedPlatforms.some(platform => gamePlatforms.includes(platform));
         const genreMatches = selectedGenres.length === 0 || selectedGenres.some(genre => gameGenres.includes(genre));
 
@@ -213,28 +248,7 @@ function filterGames() {
             gameElement.style.display = 'none';
         }
     });
-}
 
-// Função para fazer logout
-function logout() {
-    auth.signOut().then(() => {
-        console.log('Logout bem-sucedido!');
-        window.location.href = 'index.html'; // Redireciona para a página inicial após o logout
-    }).catch((error) => {
-        console.error('Erro ao fazer logout:', error);
-    });
-}
-
-// Criar um novo usuário
-function createNewUser(userId, email, username) {
-    database.ref(`usuarios/${userId}`).set({
-        email: email,
-        username: username,
-        admin: false,
-        categorias: {}
-    }).then(() => {
-        console.log('Usuário criado com sucesso:', userId);
-    }).catch((error) => {
-        console.error('Erro ao criar usuário:', error);
-    });
+    // Recalcular a paginação após o filtro
+    changePage(1);
 }
