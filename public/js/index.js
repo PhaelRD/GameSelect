@@ -17,24 +17,23 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
 
-// Variáveis globais para os filtros
+// Variáveis globais
+let games = {}; // Armazenará todos os jogos antes da filtragem
+let filteredGames = {}; // Armazenará jogos filtrados
+let currentPage = 1;
+const gamesPerPage = 15;
 let selectedPlatforms = [];
 let selectedGenres = [];
 
-// Variáveis de paginação
-let currentPage = 1;
-const gamesPerPage = 15;
-
+// Evento de carregamento da página
 document.addEventListener('DOMContentLoaded', function() {
     // Verifique a autenticação e ajuste a interface
     auth.onAuthStateChanged(function(user) {
         if (user) {
-            // Usuário autenticado
-            console.log("Usuário autenticado:", user.uid); // Log para verificar o UID do usuário
+            console.log("Usuário autenticado:", user.uid);
             document.getElementById('logout-menu-item').style.display = 'block';
-            document.getElementById('perfil-menu-item').style.display = 'block'; // Mostrar "Perfil" quando logado
+            document.getElementById('perfil-menu-item').style.display = 'block';
             
-            // Verifique os dados do usuário no banco de dados
             database.ref(`usuarios/${user.uid}`).once('value').then(snapshot => {
                 const userData = snapshot.val();
                 if (!userData) {
@@ -42,22 +41,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                console.log("Dados do usuário:", userData); // Log para verificar os dados do usuário
+                console.log("Dados do usuário:", userData);
                 
-                const isAdmin = userData.admin === true; // Verificar se admin é true
-                console.log("Usuário é admin:", isAdmin); // Log para verificar o status de admin
+                const isAdmin = userData.admin === true;
+                console.log("Usuário é admin:", isAdmin);
                 
-                // Mostrar ou ocultar "Admin" conforme necessário
                 document.getElementById('admin-menu-item').style.display = isAdmin ? 'block' : 'none';
             }).catch(error => {
                 console.error("Erro ao verificar o status de administrador:", error);
                 document.getElementById('admin-menu-item').style.display = 'none';
             });
         } else {
-            // Usuário não autenticado
             console.log("Nenhum usuário autenticado.");
             document.getElementById('logout-menu-item').style.display = 'none';
-            document.getElementById('perfil-menu-item').style.display = 'none'; // Ocultar "Perfil" quando não logado
+            document.getElementById('perfil-menu-item').style.display = 'none';
             document.getElementById('admin-menu-item').style.display = 'none';
         }
     });
@@ -77,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .filter(filter => filter.checked)
             .map(filter => filter.value);
 
-        filterGames();
+        filterGames(); // Aplica a filtragem sempre que os filtros são atualizados
     }
 
     // Adicionar ouvintes de eventos para filtros
@@ -91,20 +88,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Buscar jogos do banco de dados e renderizá-los
 function fetchGames() {
-    database.ref('jogos').on('value', snapshot => {
-        const jogos = snapshot.val();
-        calculateAndRenderGamesWithRatings(jogos);
+    database.ref('jogos').once('value').then(snapshot => {
+        games = snapshot.val() || {};
+        calculateAndRenderGamesWithRatings();
+    }).catch(error => {
+        console.error("Erro ao buscar jogos:", error);
     });
 }
 
 // Calcular classificações médias e renderizar jogos
-function calculateAndRenderGamesWithRatings(jogos) {
+function calculateAndRenderGamesWithRatings() {
     const ratingsRef = database.ref('usuarios');
     ratingsRef.once('value').then(snapshot => {
         const users = snapshot.val() || {};
         const gameRatings = {};
 
-        // Calcular classificações médias para cada jogo
         for (let userId in users) {
             const categorias = users[userId].categorias || {};
             for (let gameId in categorias) {
@@ -118,36 +116,58 @@ function calculateAndRenderGamesWithRatings(jogos) {
             }
         }
 
-        // Calcular classificações médias e atualizar jogos
         for (let gameId in gameRatings) {
             const { sum, count } = gameRatings[gameId];
             const averageRating = count > 0 ? (sum / count).toFixed(1) : 'N/A';
-
-            if (jogos[gameId]) { // Verifique se o jogo existe nos dados de jogos
-                jogos[gameId].averageRating = `${averageRating}/10`;
+            if (games[gameId]) {
+                games[gameId].averageRating = `${averageRating}/10`;
             }
         }
 
-        renderGames(jogos);
+        filterGames(); // Filtrar jogos após calcular as classificações
     }).catch(error => {
         console.error('Erro ao calcular classificações de jogos:', error);
     });
 }
 
-// Renderizar jogos com base nos dados do Firebase
-function renderGames(jogos) {
+// Função para filtrar jogos com base no termo de pesquisa
+function filterGames() {
+    const searchInput = document.getElementById('pesquisa-nome');
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const platformFilters = document.querySelectorAll('.filtro-plataforma');
+    const genreFilters = document.querySelectorAll('.filtro-genero');
+
+    filteredGames = Object.entries(games).filter(([id, jogo]) => {
+        const gameName = jogo.nome.toLowerCase();
+        const gamePlatforms = jogo.plataformas || [];
+        const gameGenres = jogo.generos || [];
+
+        const nameMatches = gameName.includes(searchTerm);
+        const platformMatches = selectedPlatforms.length === 0 || selectedPlatforms.some(platform => gamePlatforms.includes(platform));
+        const genreMatches = selectedGenres.length === 0 || selectedGenres.some(genre => gameGenres.includes(genre));
+
+        return nameMatches && platformMatches && genreMatches;
+    }).reduce((obj, [id, jogo]) => {
+        obj[id] = jogo;
+        return obj;
+    }, {});
+
+    renderGames();
+}
+
+// Renderizar jogos com base nos dados filtrados
+function renderGames() {
     const gameList = document.getElementById('jogos-lista');
     gameList.innerHTML = '';
 
-    // Calcular o índice inicial e final com base na página atual
+    const totalFilteredGames = Object.keys(filteredGames).length;
     const startIndex = (currentPage - 1) * gamesPerPage;
     const endIndex = startIndex + gamesPerPage;
 
-    // Obter os jogos que devem ser exibidos na página atual
-    const jogosArray = Object.entries(jogos);
-    const jogosParaExibir = jogosArray.slice(startIndex, endIndex);
+    const filteredGamesArray = Object.entries(filteredGames);
+    const gamesToDisplay = filteredGamesArray.slice(startIndex, endIndex);
 
-    jogosParaExibir.forEach(([id, jogo]) => {
+    gamesToDisplay.forEach(([id, jogo]) => {
         const gameElement = document.createElement('div');
         gameElement.classList.add('col-lg-4', 'col-md-6', 'mb-4', 'game');
         gameElement.setAttribute('data-id', id);
@@ -184,15 +204,15 @@ function renderGames(jogos) {
         gameList.appendChild(gameElement);
     });
 
-    updatePaginationControls(jogosArray.length);
+    updatePaginationControls(totalFilteredGames);
 }
 
+// Atualizar controles de paginação
 function updatePaginationControls(totalGames) {
     const totalPages = Math.ceil(totalGames / gamesPerPage);
     const paginationControls = document.getElementById('pagination-controls');
     paginationControls.innerHTML = '';
 
-    // Botão de página anterior
     if (currentPage > 1) {
         const prevButton = document.createElement('button');
         prevButton.textContent = 'Anterior';
@@ -200,7 +220,6 @@ function updatePaginationControls(totalGames) {
         paginationControls.appendChild(prevButton);
     }
 
-    // Botões de página
     for (let i = 1; i <= totalPages; i++) {
         const pageButton = document.createElement('button');
         pageButton.textContent = i;
@@ -212,7 +231,6 @@ function updatePaginationControls(totalGames) {
         paginationControls.appendChild(pageButton);
     }
 
-    // Botão de página seguinte
     if (currentPage < totalPages) {
         const nextButton = document.createElement('button');
         nextButton.textContent = 'Próximo';
@@ -221,34 +239,8 @@ function updatePaginationControls(totalGames) {
     }
 }
 
+// Alterar página
 function changePage(page) {
     currentPage = page;
-    fetchGames();
-}
-
-// Função para filtrar jogos com base no termo de pesquisa
-function filterGames() {
-    const searchInput = document.getElementById('pesquisa-nome');
-    const searchTerm = searchInput.value.toLowerCase().trim();
-    const platformFilters = document.querySelectorAll('.filtro-plataforma');
-    const genreFilters = document.querySelectorAll('.filtro-genero');
-
-    document.querySelectorAll('.game').forEach(gameElement => {
-        const gameName = gameElement.querySelector('.card-title').textContent.toLowerCase();
-        const gamePlatforms = (gameElement.getAttribute('data-plataforma') || '').split(',');
-        const gameGenres = (gameElement.getAttribute('data-genero') || '').split(',');
-
-        const nameMatches = gameName.includes(searchTerm);
-        const platformMatches = selectedPlatforms.length === 0 || selectedPlatforms.some(platform => gamePlatforms.includes(platform));
-        const genreMatches = selectedGenres.length === 0 || selectedGenres.some(genre => gameGenres.includes(genre));
-
-        if (nameMatches && platformMatches && genreMatches) {
-            gameElement.style.display = 'block';
-        } else {
-            gameElement.style.display = 'none';
-        }
-    });
-
-    // Recalcular a paginação após o filtro
-    changePage(1);
+    renderGames(); // Renderizar jogos da página atual
 }

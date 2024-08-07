@@ -157,16 +157,12 @@
 
     /* Layout dos Feeds */
     #feed-resenhas {
-        background-color: #ffffff; /* Fundo branco */
         border-radius: 10px; /* Bordas arredondadas */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra */
     }
 
     #friends-reviews,
     #top-reviews {
-        background-color: #ffffff; /* Fundo branco */
         border-radius: 10px; /* Bordas arredondadas */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra */
         margin-bottom: 20px; /* Espaçamento inferior */
     }
 
