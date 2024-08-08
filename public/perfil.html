@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil do Usuário</title>
     <link rel="stylesheet" href="css/perfil.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-database.js"></script>
@@ -31,31 +32,34 @@
             </div>
         </nav>
     </header>
-    <main>
-        <section id="amigos">
+    <main class="container mt-4">
+        <section id="amigos" class="mb-4">
             <h2>Amigos</h2>
-            <div id="amigos-lista">
+            <div id="amigos-lista" class="list-group">
                 <!-- Lista de amigos será carregada aqui -->
             </div>
         </section>        
-        <section id="desejados">
+        <section id="desejados" class="mb-4">
             <h2>Desejados</h2>
-            <div id="desejados-lista">
+            <div id="desejados-lista" class="list-group">
                 <!-- Lista de jogos desejados será carregada aqui -->
             </div>
         </section>
-        <section id="jogando">
+        <section id="jogando" class="mb-4">
             <h2>Jogando</h2>
-            <div id="jogando-lista">
+            <div id="jogando-lista" class="list-group">
                 <!-- Lista de jogos em andamento será carregada aqui -->
             </div>
         </section>
-        <section id="zerado">
+        <section id="zerado" class="mb-4">
             <h2>Zerado</h2>
-            <div id="zerado-lista">
+            <div id="zerado-lista" class="list-group">
                 <!-- Lista de jogos zerados e notas será carregada aqui -->
             </div>
         </section>
     </main>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

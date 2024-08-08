@@ -85,15 +85,16 @@ function createGameElement(gameId, container, userRating = null, review = null, 
         const jogo = snapshot.val();
         if (jogo) {
             const gameDiv = document.createElement('div');
-            gameDiv.classList.add('game-item');
+            gameDiv.classList.add('game-item', 'card', 'mb-3');
 
             // Create a link to the game details page
             const gameLink = document.createElement('a');
             gameLink.href = `jogo.html?id=${gameId}`;
-            gameLink.classList.add('game-link');
+            gameLink.classList.add('game-link', 'card-body');
 
             // Create game title
             const gameTitle = document.createElement('h3');
+            gameTitle.classList.add('card-title');
             gameTitle.textContent = jogo.nome;
             gameLink.appendChild(gameTitle);
 
@@ -101,6 +102,7 @@ function createGameElement(gameId, container, userRating = null, review = null, 
             const gameImage = document.createElement('img');
             gameImage.src = jogo.imagem;
             gameImage.alt = jogo.nome;
+            gameImage.classList.add('card-img-top');
             gameLink.appendChild(gameImage);
 
             // Append the link to the gameDiv
@@ -109,6 +111,7 @@ function createGameElement(gameId, container, userRating = null, review = null, 
             // Add user's rating if available
             if (userRating !== null) {
                 const userRatingElement = document.createElement('p');
+                userRatingElement.classList.add('card-text');
                 userRatingElement.textContent = `Sua Nota: ${userRating}/10`;
                 gameDiv.appendChild(userRatingElement);
             }
@@ -116,6 +119,7 @@ function createGameElement(gameId, container, userRating = null, review = null, 
             // Add review if available
             if (review !== null) {
                 const reviewElement = document.createElement('p');
+                reviewElement.classList.add('card-text');
                 reviewElement.textContent = `Resenha: ${review}`;
                 gameDiv.appendChild(reviewElement);
             }
@@ -123,6 +127,7 @@ function createGameElement(gameId, container, userRating = null, review = null, 
             // Fetch and display the average rating
             fetchAverageRating(gameId).then(averageRating => {
                 const averageRatingElement = document.createElement('p');
+                averageRatingElement.classList.add('card-text');
                 averageRatingElement.textContent = `Nota Média: ${averageRating}`;
                 gameDiv.appendChild(averageRatingElement);
             });
@@ -130,6 +135,7 @@ function createGameElement(gameId, container, userRating = null, review = null, 
             // Fetch and display the number of likes
             fetchNumberOfLikes(gameId).then(numberOfLikes => {
                 const likesElement = document.createElement('p');
+                likesElement.classList.add('card-text');
                 likesElement.textContent = `Curtidas: ${numberOfLikes}`;
                 gameDiv.appendChild(likesElement);
             });
@@ -207,15 +213,16 @@ function renderFriendsList(userId, containerId) {
                     const friendData = friendSnapshot.val();
                     if (friendData) {
                         const friendDiv = document.createElement('div');
-                        friendDiv.classList.add('friend-item');
+                        friendDiv.classList.add('friend-item', 'card', 'mb-3');
 
                         // Create a link to the friend's profile
                         const friendLink = document.createElement('a');
                         friendLink.href = `perfilamigo.html?userId=${friendId}`;
-                        friendLink.classList.add('friend-link');
+                        friendLink.classList.add('friend-link', 'card-body');
 
                         // Create friend name
                         const friendName = document.createElement('h4');
+                        friendName.classList.add('card-title');
                         friendName.textContent = friendData.username || 'Desconhecido';
                         friendLink.appendChild(friendName);
 
@@ -223,6 +230,7 @@ function renderFriendsList(userId, containerId) {
 
                         // Add 'Unfollow' button
                         const unfollowButton = document.createElement('button');
+                        unfollowButton.classList.add('btn', 'btn-danger', 'mt-2');
                         unfollowButton.textContent = 'Deixar de Seguir';
                         unfollowButton.onclick = () => unfollowUser(userId, friendId);
                         friendDiv.appendChild(unfollowButton);
@@ -234,7 +242,7 @@ function renderFriendsList(userId, containerId) {
                 });
             });
         } else {
-            container.innerHTML = '<p>Você não tem amigos para exibir.</p>';
+            container.innerHTML = '<p class="text-muted">Você não tem amigos para exibir.</p>';
         }
     }).catch(error => {
         console.error('Error loading friends list:', error);
