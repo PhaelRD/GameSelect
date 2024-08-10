@@ -61,6 +61,10 @@ function fetchReviews() {
     let promises = [];
     let friendsIds = [];
 
+    // Calcula a data limite (uma semana atrás)
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
     // Primeiro, obter os IDs dos amigos do usuário atual
     const currentUserRef = database.ref('usuarios/' + currentUserId);
     promises.push(currentUserRef.once('value').then(userSnapshot => {
@@ -79,19 +83,24 @@ function fetchReviews() {
                 if (game.status === 'zerado') {
                     promises.push(
                         fetchGameDetails(gameId).then(gameDetails => {
-                            const review = {
-                                userId,
-                                username,
-                                gameId,
-                                gameName: gameDetails.nome,
-                                gameImage: gameDetails.imagem,
-                                ...game
-                            };
-                            reviewsArray.push(review);
-                            topReviewsArray.push(review);
+                            const reviewTimestamp = new Date(game.timestamp); // Supondo que game.timestamp é a data da resenha
+                            
+                            // Verifica se a resenha foi feita até uma semana antes
+                            if (reviewTimestamp >= oneWeekAgo) {
+                                const review = {
+                                    userId,
+                                    username,
+                                    gameId,
+                                    gameName: gameDetails.nome,
+                                    gameImage: gameDetails.imagem,
+                                    ...game
+                                };
+                                reviewsArray.push(review);
+                                topReviewsArray.push(review);
 
-                            if (friendsIds.includes(userId)) {
-                                friendsReviewsArray.push(review);
+                                if (friendsIds.includes(userId)) {
+                                    friendsReviewsArray.push(review);
+                                }
                             }
                         })
                     );
@@ -116,6 +125,7 @@ function fetchReviews() {
         showModal('Erro', 'Erro ao carregar dados dos usuários. Tente novamente.');
     });
 }
+
 
 // Função para renderizar as 5 resenhas mais curtidas
 function renderTopReviews(reviews) {
