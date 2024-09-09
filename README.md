@@ -317,3 +317,33 @@ Exibe um modal com um título e mensagem fornecidos, utilizando o componente mod
 - Busca os detalhes do jogo no Firebase usando o ID.
 - Renderiza os detalhes do jogo e configura os botões de categoria.
 - Calcula e exibe a média de avaliações do jogo.
+
+# resenha.js
+
+## 1. Inicialização do Firebase
+O código começa inicializando o Firebase com as configurações específicas do projeto, permitindo a integração com os serviços de autenticação, banco de dados em tempo real e armazenamento de arquivos.
+
+## 2. Autenticação do Usuário
+- **Função `checkAuthState`**: Monitora o estado de autenticação do usuário. Se o usuário estiver logado, o item de menu "Logout" é exibido e as resenhas são buscadas. Caso contrário, o usuário é redirecionado para a página de login.
+- **Função `logout`**: Realiza o logout do usuário e redireciona-o para a página de login.
+
+## 3. Busca de Dados
+- **Função `fetchGameDetails`**: Obtém os detalhes de um jogo específico a partir do banco de dados em tempo real do Firebase.
+- **Função `fetchReviews`**: Busca as últimas 50 resenhas dos jogos que os usuários marcaram como "zerados" na última semana. As resenhas são categorizadas em três arrays: todas as resenhas, as cinco resenhas mais curtidas e as resenhas de amigos do usuário.
+
+## 4. Renderização de Resenhas
+- **Funções `renderTopReviews`, `renderReviews` e `renderFriendsReviews`**: Responsáveis por exibir as resenhas no frontend. Cada função cria elementos HTML para exibir as resenhas em formato de cartão, mostrando o jogo, nota, resenha e o botão "Curtir". 
+  - A função `renderTopReviews` exibe as cinco resenhas mais curtidas.
+  - A função `renderReviews` exibe as últimas 50 resenhas gerais.
+  - A função `renderFriendsReviews` exibe as resenhas de amigos do usuário.
+
+## 5. Interatividade
+O código adiciona eventos de clique aos botões "Curtir" para permitir que os usuários interajam com as resenhas. A função `likeReview` atualiza o número de curtidas de uma resenha específica no banco de dados e recarrega a lista de resenhas atualizadas.
+
+## 6. Tratamento de Erros
+A função `showModal` exibe uma janela modal de erro quando ocorre algum problema, como falha ao buscar resenhas ou dados dos usuários.
+
+## 7. Eventos do DOM
+- O evento `DOMContentLoaded` inicializa a aplicação ao verificar o estado de autenticação do usuário.
+- Um evento de clique é adicionado ao item de menu "Logout" para permitir que o usuário se desconecte da aplicação.
+
